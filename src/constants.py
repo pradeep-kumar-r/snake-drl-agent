@@ -1,0 +1,13 @@
+# Rewards for the agent
+RW_FOOD_EATEN = 10
+RW_COLLISSION = -100
+RW_MOVE = -1
+
+# Game points
+POINTS_FOOD_EATEN = 10
+
+# Tutle Screen
+SCREEN_WIDTH = 1000
+SCREEN_HEIGHT = 1000
+SCREEN_COLOUR = "black"
+SCREEN_TITLE = "SNAKE GAME"
