@@ -26,6 +26,9 @@ snake_drl_agent/
 │   ├── __init__.py
 │   ├── logger.py       # Logging utilities
 │   └── recorder.py     # Screen recording utilities
+├── monitoring/
+│   ├── __init__.py
+│   ├── 
 ├── tests/
 │   ├── __init__.py
 │   ├── test_game.py    # Tests for game mechanics
