@@ -12,47 +12,32 @@ This project implements a Deep Reinforcement Learning (DRL) agent trained to pla
 
 ## Repository Structure
 
-    project-snake-drl/
-    │
-    ├── notebooks/
-    │   ├── training_pipeline.ipynb        # Jupyter Notebook for model training
-    │   ├── experimentation.ipynb          # Jupyter Notebook for experimentation and analysis
-    │
-    ├── src/
-    │   ├── environment/
-    │   │   ├── snake_game.py              # Implementation of the Snake game environment
-    │   │   ├── snake_environment.py       # Gym-compatible wrapper for the game
-    │   │
-    │   ├── rl/
-    │   │   ├── dqn_agent.py               # Deep Q-Network agent
-    │   │   ├── replay_buffer.py           # Experience replay buffer
-    │   │   ├── trainer.py                 # Training loop for the RL agent
-    │   │
-    │   ├── utils/
-    │       ├── logger.py                  # Loguru-based logging setup
-    │       ├── config.py                  # Configuration management
-    │       ├── visualizer.py              # Visualization utilities
-    │
-    ├── app/
-    │   ├── run_agent.py                   # Script to run the trained agent
-    │   ├── app_interface.py               # Gradio-based web interface for showcasing the agent
-    │
-    ├── deployments/
-    │   ├── Dockerfile                     # Docker setup
-    │   ├── k8s.yaml                       # Kubernetes deployment file
-    │
-    ├── tests/
-    │   ├── test_environment.py            # Unit tests for game environment
-    │   ├── test_agent.py                  # Unit tests for agent
-    │
-    ├── .env                               # Environment variables
-    ├── requirements.txt                   # Dependencies
-    ├── README.md                          # Detailed project documentation
-    └── config.yaml                        # General configuration file
+snake_drl_agent/
+├── game/
+│   ├── __init__.py
+│   ├── game.py         # Main game loop and rendering
+│   ├── snake.py        # Snake class: movement, growth, collision
+│   └── food.py         # Food class: spawning, bonus logic
+├── agent/
+│   ├── __init__.py
+│   ├── dqn.py          # DQN agent logic
+│   └── model.py        # Neural network architecture
+├── utils/
+│   ├── __init__.py
+│   ├── logger.py       # Logging utilities
+│   └── recorder.py     # Screen recording utilities
+├── tests/
+│   ├── __init__.py
+│   ├── test_game.py    # Tests for game mechanics
+│   └── test_agent.py   # Tests for agent behavior
+├── main.py             # Entry point to run the game or training
+├── requirements.txt    # Project dependencies
+└── README.md           # Project overview and instructions
+
 
 ## Technologies Used
 ML: PyTorch
 UI: Tkinter
 Web App: FastAPI & Gradio
-Deployment: Docker, Kubernetes
+Deployment: Docker, Docker Compose
 Logging: Loguru
