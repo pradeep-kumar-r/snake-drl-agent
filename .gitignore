@@ -162,5 +162,5 @@ cython_debug/
 .env
 .venv/
 .DS_Store
-logs/
-data/
+logs/*.*
+src/data/*.*

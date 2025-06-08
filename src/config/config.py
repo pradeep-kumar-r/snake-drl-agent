@@ -1,12 +1,15 @@
 from dataclasses import dataclass
-from pathlib import Path
-from .artefacts_config import ArtefactsConfig
-from .model_training_config import ModelTrainingConfig
+from .data_config import DataConfig
+from .training_config import TrainingConfig
 from .logs_config import LogsConfig
+from .model_config import ModelConfig
+from .game_config import GameConfig
 
 
 @dataclass(frozen=True)
 class Config:
-    artefacts_config: ArtefactsConfig
-    model_training_config: ModelTrainingConfig
+    data_config: DataConfig
+    training_config: TrainingConfig
     logs_config: LogsConfig
+    model_config: ModelConfig
+    game_config: GameConfig
