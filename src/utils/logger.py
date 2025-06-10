@@ -1,10 +1,10 @@
 import sys
 import os
 from loguru import logger
-from src.config.config_manager import ConfigManager
+from src.config import config
 
 
-log_path = ConfigManager().get_config().logs_config.logs_folder_path
+log_path = config.get_logs_config().LOGS_FOLDER_PATH
 os.makedirs(log_path, exist_ok=True)
 logger.remove()
 logger.add(sys.stdout, level="INFO")
