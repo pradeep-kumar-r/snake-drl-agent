@@ -5,9 +5,8 @@ from src.config import config
 
 
 class Food(ABC):
-    def __init__(self, board_width: int, board_height: int):
-        self.board_width: int = board_width
-        self.board_height: int = board_height
+    def __init__(self, board_dim: int):
+        self.board_dim: int = board_dim
         self.position: Optional[Tuple[int, int]] = None
     
     @abstractmethod
@@ -25,13 +24,13 @@ class Food(ABC):
 
 class SimpleFood(Food):
     def __init__(self, 
-                 board_width: int=config.get_game_config().BOARD_WIDTH,
-                 board_height: int=config.get_game_config().BOARD_HEIGHT):
-        super().__init__(board_width, board_height)
+                 board_dim: int=config.get_game_config().BOARD_DIM):
+        super().__init__(board_dim)
+        self.remaining_steps = 0
         
     def place_food(self, snake_body: List[Tuple[int, int]]):
         while True:
-            pos = (random.randint(0, self.board_width-1), random.randint(0, self.board_height-1))
+            pos = (random.randint(-1*self.board_dim//2, self.board_dim//2), random.randint(-1*self.board_dim//2, self.board_dim//2))
             if pos not in snake_body:
                 self.position = pos
                 break
@@ -45,17 +44,16 @@ class SimpleFood(Food):
 
 class SuperFood(Food):
     def __init__(self, 
-                 board_width: int=config.get_game_config().BOARD_WIDTH,
-                 board_height: int=config.get_game_config().BOARD_HEIGHT,
+                 board_dim: int=config.get_game_config().BOARD_DIM,
                  lifetime: int=config.get_training_config().FOOD.SUPERFOOD_LIFETIME):
-        super().__init__(board_width, board_height)
+        super().__init__(board_dim)
         self.lifetime = lifetime
         self.remaining_steps = 0
         self.active = False
 
     def place_food(self, snake_body: List[Tuple[int, int]]):
         while True:
-            pos = (random.randint(0, self.board_width-1), random.randint(0, self.board_height-1))
+            pos = (random.randint(-1*self.board_dim//2, self.board_dim//2), random.randint(-1*self.board_dim//2, self.board_dim//2))
             if pos not in snake_body:
                 self.position = pos
                 self.active = True

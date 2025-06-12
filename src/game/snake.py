@@ -5,15 +5,12 @@ from src.config import config
 
 class Snake:
     def __init__(self, 
-                 init_pos: Tuple[int, int] = config.get_game_config().snake_init_pos,
-                 init_length: int = config.get_game_config().snake_init_length,
-                 init_direction: Direction = config.get_game_config().snake_init_direction):
-        self.init_pos: Tuple[int, int] = init_pos
-        self.init_length: int = init_length
-        self.init_direction: Direction = init_direction
-        self.reset()
-
-    def reset(self):
+                 game_config = config.get_game_config):
+        self.game_config = game_config
+        self.board_dim: int = self.game_config.BOARD_DIM
+        self.init_pos: Tuple[int, int] = self.game_config.SNAKE.SNAKE_INIT_POS
+        self.init_length: int = self.game_config.SNAKE.SNAKE_INIT_LENGTH
+        self.init_direction: Direction = self.game_config.SNAKE.SNAKE_INIT_DIRECTION
         x, y = self.init_pos
         self.body = [(x - i, y) for i in range(self.init_length)]
         self.direction = self.init_direction
@@ -24,13 +21,11 @@ class Snake:
         if not Direction.is_opposite(self.direction, new_direction):
             self.direction = new_direction
 
-    def move(self, 
-             board_width: int=config.get_game_config().board_width,
-             board_height: int=config.get_game_config().board_height):
-        left_wall_x = - 1 * board_width//2
-        right_wall_x = board_width//2
-        top_wall_y = board_height//2
-        bottom_wall_y = - 1 * board_height//2
+    def move(self):
+        left_wall_x = - 1 * self.board_dim//2
+        right_wall_x = self.board_dim//2
+        top_wall_y = self.board_dim//2
+        bottom_wall_y = - 1 * self.board_dim//2
         if not self.alive:
             return
         head_x, head_y = self.body[0]
