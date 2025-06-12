@@ -1,5 +1,7 @@
 from pathlib import Path
 import yaml
+import numpy as np
+from src.game.direction import Direction
 
 
 class ConfigManager:
@@ -15,18 +17,22 @@ class ConfigManager:
 
     @classmethod
     def _set_config(cls):
-        cls.data_config = cls.config["DATA_CONFIG"]
-        cls.data_config["DATA_FOLDER_PATH"] = Path(cls.data_config["DATA_FOLDER_PATH"])
-        
-        cls.training_config = cls.config["TRAINING_CONFIG"]
-        
-        cls.logs_config = cls.config["LOGS_CONFIG"]
-        cls.logs_config["LOGS_FOLDER_PATH"] = Path(cls.logs_config["LOGS_FOLDER_PATH"])
-        
-        cls.model_config = cls.config["MODEL_CONFIG"]
-        cls.model_config["MODELS_FOLDER_PATH"] = Path(cls.model_config["MODELS_FOLDER_PATH"])
-        
         cls.game_config = cls.config["GAME_CONFIG"]
+        cls.data_config = cls.config["DATA_CONFIG"]
+        cls.training_config = cls.config["TRAINING_CONFIG"]
+        cls.logs_config = cls.config["LOGS_CONFIG"]
+        cls.model_config = cls.config["MODEL_CONFIG"]
+        
+        b = cls.game_config["BOARD_DIM"] // 2
+        a = max(0, cls.game_config["SNAKE"]["SNAKE_INIT_LENGTH"] - b - 1)
+        d = Direction[cls.game_config["SNAKE"]["SNAKE_INIT_DIRECTION"]].value
+        cls.game_config["SNAKE"]["SNAKE_INIT_POS"] = np.dot(d, (a, b)), np.dot(d, (b, a))
+        cls.data_config["DATA_FOLDER_PATH"] = Path(cls.data_config["DATA_FOLDER_PATH"])
+        cls.data_config["GAME_DATA_FOLDER"] = cls.data_config["DATA_FOLDER_PATH"].joinpath(cls.data_config["GAME_DATA_FOLDER"])
+        cls.data_config["MODEL_DATA_FOLDER"] = cls.data_config["DATA_FOLDER_PATH"].joinpath(cls.data_config["MODEL_DATA_FOLDER"])
+        cls.logs_config["LOGS_FOLDER_PATH"] = Path(cls.logs_config["LOGS_FOLDER_PATH"])
+        cls.model_config["MODELS_FOLDER_PATH"] = Path(cls.model_config["MODELS_FOLDER_PATH"])
+        cls.model_config["IMAGE_INPUT_SIZE"] = cls.game_config["BOARD_DIM"] ** 2
     
     @classmethod
     def get_data_config(cls):
