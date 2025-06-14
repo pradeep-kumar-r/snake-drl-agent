@@ -50,13 +50,13 @@ class Game:
     def step(self, action: Literal[0, 1, 2, 3, 4]) -> Tuple[float, bool, int, int]:
         """
         Actions:
-            0: STILL (continue in current direction)
+            0: STILL (do nothing)
             1: RIGHT
             2: DOWN
             3: LEFT
             4: UP
         Returns:
-            tuple: (reward, game_over, score)
+            tuple: (reward, game_over, score, steps_elapsed)
         """
         training_rewards = self.config.get_training_config().REWARDS
         current_reward = training_rewards.MOVE

@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import font as tkFont
 import os
+from time import sleep
 from src.game.game import Game
 from src.game.direction import Direction
 from src.game.food import SuperFood
@@ -39,7 +40,7 @@ class GameUI:
 
         # Legend
         self.legend_label = tk.Label(master, 
-                                     text="Legend: Snake Head: > < v ^ (Bold) | Snake Body: * | Simple Food: O | Super Food: X", 
+                                     text="Legend: \nSnake: ***> | Simple Food: O | Super Food: X", 
                                      font=("Arial", 10))
         self.legend_label.pack(pady=10)
 
@@ -149,25 +150,23 @@ class GameUI:
                                 text=f"Final Score: {self.game.score}", font=("Arial", 16), fill="black")
         self.canvas.create_text(self.board_width / 2, self.board_height / 2 + 10,
                                 text=f"RESTARTING...", font=("Arial", 16), fill="black")
-        self._restart_game()
-        # restart_button = tk.Button(self.master, text="Restart", command=self._restart_game, font=("Arial", 12))
-        # self.canvas.create_window(self.board_width / 2, self.board_height / 2 + 60, window=restart_button)
+        # self._restart_game()
+        restart_button = tk.Button(self.master, text="Restart", command=self._restart_game, font=("Arial", 12))
+        self.canvas.create_window(self.board_width / 2, self.board_height / 2 + 60, window=restart_button)
 
     def _restart_game(self):
         self.game.reset()
-        self.high_score = self._load_high_score() # Re-load in case it was updated elsewhere or for consistency
+        self.high_score = self._load_high_score()
         self._update_score_display()
-        # Clear game over messages and button if they are canvas items
-        self.canvas.delete("game_over_text") # Add tags to game over text if needed
-        self.canvas.delete("restart_button_window") # Add tags to button window if needed
+        self.canvas.delete("game_over_text")
+        self.canvas.delete("restart_button_window")
         
-        # Re-bind keys if they were unbound or if master was destroyed/recreated
         self.master.bind("<Left>", lambda event: self._handle_keypress(Direction.LEFT))
         self.master.bind("<Right>", lambda event: self._handle_keypress(Direction.RIGHT))
         self.master.bind("<Up>", lambda event: self._handle_keypress(Direction.UP))
         self.master.bind("<Down>", lambda event: self._handle_keypress(Direction.DOWN))
 
-        self._update_game() # Start the game loop again
+        self._update_game()
 
 if __name__ == '__main__':
     root = tk.Tk()
