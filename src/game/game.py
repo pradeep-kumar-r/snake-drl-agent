@@ -1,5 +1,5 @@
 import random
-from typing import Optional
+from typing import Optional, Literal, Tuple
 from src.game.direction import Direction
 from src.game.snake import Snake
 from src.game.food import Food, SimpleFood, SuperFood
@@ -10,8 +10,7 @@ class Game:
     def __init__(self, configuration=config):
         self.config = configuration
         self.game_config = configuration.get_game_config()
-        # Initialize attributes to default values before reset
-        self.snake: Optional[Snake] = None # Will be set in reset
+        self.snake: Optional[Snake] = None
         self.food: Optional[Food] = None
         self.steps_elapsed: int = 0
         self.food_count: int = 0
@@ -48,9 +47,8 @@ class Game:
     def is_game_over(self):
         return self.game_over
     
-    def step(self, action: int):
+    def step(self, action: Literal[0, 1, 2, 3, 4]) -> Tuple[float, bool, int, int]:
         """
-        Processes a single step of the game based on the given action.
         Actions:
             0: STILL (continue in current direction)
             1: RIGHT
@@ -61,11 +59,8 @@ class Game:
             tuple: (reward, game_over, score)
         """
         training_rewards = self.config.get_training_config().REWARDS
-        current_reward = training_rewards.ALIVE_REWARD  # Start with reward/penalty for surviving a step
+        current_reward = training_rewards.MOVE
 
-        # Define action mapping to Direction enum
-        # Order: RIGHT, DOWN, LEFT, UP (corresponds to actions 1, 2, 3, 4)
-        # Action 0 (STILL) means no change in direction
         action_to_direction_map = {
             1: Direction.RIGHT,
             2: Direction.DOWN,
@@ -75,19 +70,18 @@ class Game:
 
         if action in action_to_direction_map:
             new_direction = action_to_direction_map[action]
-            # Prevent immediate 180-degree turns if it's a valid new direction
             if not Direction.is_opposite(new_direction, self.snake.direction):
                 self.snake.set_direction(new_direction)
-        # If action is 0 (STILL) or an invalid turn, snake continues in its current direction
+        else:
+            current_reward += training_rewards.NOTHING
         
         self.snake.move()
 
         # Check if food is active - update food, if not generate food
         if self.is_food_active:
-            if not self.food.update(): # update returns False if food expired
-                self.is_food_active = False # Mark as inactive so new food is generated
-                # Optional: Add a small penalty for letting superfood expire if desired
-        
+            if not self.food.update():
+                self.is_food_active = False
+                
         if not self.is_food_active:
             self.generate_food()
         
@@ -95,26 +89,24 @@ class Game:
         if self._is_food_eaten():
             self.food_count += 1
             if isinstance(self.food, SimpleFood):
-                food_reward = training_rewards.EAT_FOOD
+                current_reward += training_rewards.EAT_FOOD
                 self.score += self.game_config.SCORE.EAT_FOOD
-            else: # SuperFood
-                # Ensure remaining_steps is available and positive for SuperFood
+            else: 
                 super_food_value = self.food.remaining_steps if hasattr(self.food, 'remaining_steps') else 1
-                food_reward = training_rewards.XPLIER_EAT_SUPERFOOD * super_food_value
+                current_reward += training_rewards.XPLIER_EAT_SUPERFOOD * super_food_value
                 self.score += self.game_config.SCORE.XPLIER_EAT_SUPERFOOD * super_food_value
             
-            current_reward += food_reward
-            self.is_food_active = False # Mark as eaten so new food is generated
-            self.generate_food() # Generate new food immediately
+            self.is_food_active = False 
+            self.generate_food()
         
         # Check for collision
         if self.snake.check_collision():
             self.game_over = True
             current_reward += training_rewards.GAME_OVER_REWARD
-            self.record_score() # Record score on game over
+            self.record_score()
 
         self.steps_elapsed += 1
-        return current_reward, self.game_over, self.score
+        return current_reward, self.game_over, self.score, self.steps_elapsed
         
     def record_score(self):
         if self.is_game_over:
