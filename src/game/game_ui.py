@@ -2,156 +2,146 @@ import tkinter as tk
 from tkinter import font as tkFont
 import os
 from time import sleep
-from src.game.game import Game
+from typing import Dict, Any, Optional
 from src.game.direction import Direction
-from src.game.food import SuperFood
+from src.game.food import Food, SimpleFood, SuperFood
+from src.game.game import Game
+from src.game.snake import Snake
 from src.config import config
 
 
-class GameUI:
-    def __init__(self, master, configuration=config):
+class UI:
+    def __init__(self, 
+                 master, 
+                 snake: Snake,
+                 food: Optional[Food],
+                 score: int,
+                 high_score: Optional[int],
+                 ui_config: Dict[str, Any],
+                 is_game_over: bool=False):
         self.master = master
-        self.config = configuration
-        self.game_config = self.config.get_game_config()
-        self.board_width = self.board_height = self.game_config.BOARD_DIM
+        self.ui_config = ui_config
+        self.board_width = self.board_height = self.ui_config.BOARD_DIM
+        self.snake = snake
+        self.food = food
+        self.score = score
+        self.high_score = high_score
 
-        self.master.title("Snake Game")
+        self.master.title(self.ui_config.TITLE.TEXT)
 
         # Title Label
-        self.title_label = tk.Label(master, text="Snake Game", font=("Arial", 16, "bold"))
-        self.title_label.pack(pady=10)
+        self.title_label = tk.Label(self.master, 
+                                    text=self.ui_config.TITLE.TEXT, 
+                                    font=(self.ui_config.TITLE.FONT.NAME, 
+                                          self.ui_config.TITLE.FONT.SIZE, 
+                                          self.ui_config.TITLE.FONT.STYLE))
+        self.title_label.pack(pady=self.ui_config.TITLE.PADDING)
 
         # Game Canvas
-        self.canvas = tk.Canvas(master, width=self.board_width, height=self.board_height, bg="white", bd=0, highlightthickness=0)
+        self.canvas = tk.Canvas(self.master, 
+                                width=self.board_width, 
+                                height=self.board_height, 
+                                bg=self.ui_config.CANVAS.BG, 
+                                bd=self.ui_config.CANVAS.BD, 
+                                highlightthickness=self.ui_config.CANVAS.HIGHLIGHTTHICKNESS)
         self.canvas.pack()
 
-        self.game = Game(self.config)
-        self.high_score = self._load_high_score()
-
         # Score Labels
-        self.score_frame = tk.Frame(master)
-        self.score_frame.pack(pady=10)
+        self.score_frame = tk.Frame(self.master)
+        self.score_frame.pack(pady=self.ui_config.SCORE.PADDING)
 
-        self.current_score_label = tk.Label(self.score_frame, text=f"Current Score: {self.game.score}", font=("Arial", 12))
-        self.current_score_label.pack(side=tk.LEFT, padx=20)
+        self.current_score_label = tk.Label(self.score_frame, 
+                                            text=f"Current Score: {self.score}", 
+                                            font=(self.ui_config.SCORE.FONT.NAME, 
+                                                  self.ui_config.SCORE.FONT.SIZE, 
+                                                  self.ui_config.SCORE.FONT.STYLE))
+        self.current_score_label.pack(side=self.ui_config.SCORE.SIDE, 
+                                      padx=self.ui_config.SCORE.PADDING)
 
-        self.high_score_label = tk.Label(self.score_frame, text=f"Previous High Score: {self.high_score}", font=("Arial", 12))
-        self.high_score_label.pack(side=tk.LEFT, padx=20)
+        self.high_score_label = tk.Label(self.score_frame, 
+                                         text=f"Previous High Score: {self.high_score}", 
+                                         font=(self.ui_config.SCORE.FONT.NAME, 
+                                               self.ui_config.SCORE.FONT.SIZE, 
+                                               self.ui_config.SCORE.FONT.STYLE))
+        self.high_score_label.pack(side=self.ui_config.SCORE.SIDE, 
+                                   padx=self.ui_config.SCORE.PADDING)
 
         # Legend
         self.legend_label = tk.Label(master, 
                                      text="Legend: \nSnake: ***> | Simple Food: O | Super Food: X", 
-                                     font=("Arial", 10))
-        self.legend_label.pack(pady=10)
+                                     font=(self.ui_config.LEGEND.FONT.NAME, 
+                                           self.ui_config.LEGEND.FONT.SIZE,
+                                           self.ui_config.LEGEND.FONT.STYLE))
+        self.legend_label.pack(pady=self.ui_config.LEGEND.PADDING)
 
-        self.master.bind("<Left>", lambda event: self._handle_keypress(Direction.LEFT))
-        self.master.bind("<Right>", lambda event: self._handle_keypress(Direction.RIGHT))
-        self.master.bind("<Up>", lambda event: self._handle_keypress(Direction.UP))
-        self.master.bind("<Down>", lambda event: self._handle_keypress(Direction.DOWN))
+        # self.master.bind("<Left>", lambda event: self._handle_keypress(Direction.LEFT))
+        # self.master.bind("<Right>", lambda event: self._handle_keypress(Direction.RIGHT))
+        # self.master.bind("<Up>", lambda event: self._handle_keypress(Direction.UP))
+        # self.master.bind("<Down>", lambda event: self._handle_keypress(Direction.DOWN))
 
         self._draw_board()
         self._update_game()
 
-    def _load_high_score(self):
-        high_score_file = self.config.data_config.GAME_DATA_FOLDER.joinpath("high_score.txt")
-        if os.path.exists(high_score_file):
-            try:
-                with open(high_score_file, "r", encoding="utf-8") as f:
-                    return int(f.read())
-            except ValueError:
-                return 0
-        return 0
-
-    def _save_high_score(self):
-        high_score_file = self.config.data_config.GAME_DATA_FOLDER.joinpath("high_score.txt")
-        with open(high_score_file, "w", encoding="utf-8") as f:
-            f.write(str(self.high_score))
-
     def _draw_board(self):
         self.canvas.delete("all")
-        # Draw boundary (dashed lines)
         for x in range(0, self.board_width):
-            self.canvas.create_line(x, 0, x, self.board_height, fill="gray", dash=(2, 2))
+            self.canvas.create_line(x,
+                                    0,
+                                    x,
+                                    self.board_height,
+                                    fill=self.ui_config.BOARD.FILL,
+                                    dash=self.ui_config.BOARD.DASH)
         for y in range(0, self.board_height):
-            self.canvas.create_line(0, y, self.board_width, y, fill="gray", dash=(2, 2))
+            self.canvas.create_line(0, 
+                                    y,
+                                    self.board_width, 
+                                    y, 
+                                    fill=self.ui_config.BOARD.FILL,
+                                    dash=self.ui_config.BOARD.DASH)
 
     def _draw_snake(self):
-        head = self.game.snake.get_head()
+        head = self.snake.get_head()
         head_x, head_y = head.x, head.y
-        
-        direction_symbols = {
-            Direction.UP: "^",
-            Direction.DOWN: "v",
-            Direction.LEFT: "<",
-            Direction.RIGHT: ">"
-        }
-        head_symbol = direction_symbols.get(self.game.snake.direction, ">") # Default to > if direction is somehow None
-        
-        # Draw head
-        self.canvas.create_text(head_x + 1 / 2, 
-                                head_y + 1 / 2, 
-                                text=head_symbol, 
-                                font=tkFont.Font(family="Arial", size=6, weight="bold"), 
-                                fill="black", tags="snake")
+        self.canvas.create_text(head_x + 1/2,
+                                head_y + 1/2,
+                                text=self.ui_config.SNAKE.HEAD.SYMBOL.get(self.snake.direction, ">"),
+                                font=tkFont.Font(family=self.ui_config.SNAKE.HEAD.FONT.NAME, 
+                                                 size=self.ui_config.SNAKE.HEAD.FONT.SIZE, 
+                                                 weight=self.ui_config.SNAKE.HEAD.FONT.STYLE),
+                                fill=self.ui_config.SNAKE.HEAD.FILL,
+                                tags="snake")
 
-        # Draw body
-        for segment in self.game.snake.get_body()[1:]:
+        for segment in self.snake.get_body()[1:]:
             seg_x, seg_y = segment.x, segment.y
-            self.canvas.create_text(seg_x + 1 / 2, 
-                                    seg_y + 1 / 2, 
-                                    text="*", 
-                                    font=tkFont.Font(family="Arial", size=4), 
-                                    fill="green", tags="snake")
+            self.canvas.create_text(seg_x + 1/2,
+                                    seg_y + 1/2,
+                                    text=self.ui_config.SNAKE.BODY.SYMBOL,
+                                    font=tkFont.Font(family=self.ui_config.SNAKE.BODY.FONT.NAME, 
+                                                     size=self.ui_config.SNAKE.BODY.FONT.SIZE),
+                                    fill=self.ui_config.SNAKE.BODY.FILL,
+                                    tags="snake")
 
     def _draw_food(self):
-        if self.game.is_food_active and self.game.food:
-            food_item = self.game.food
-            food_x, food_y = food_item.position[0], food_item.position[1]
-            symbol = "O"
-            color = "red"
-            if isinstance(food_item, SuperFood):
-                symbol = "X"
-                color = "purple"
-            
-            self.canvas.create_text(food_x + 1 / 2, 
-                                    food_y + 1 / 2, 
-                                    text=symbol, 
-                                    font=tkFont.Font(family="Arial", size=6), 
-                                    fill=color, tags="food")
+        symbol = self.ui_config.FOOD.SUPER.SYMBOL if isinstance(self.food, SuperFood) else self.ui_config.FOOD.SIMPLE.SYMBOL
+        color = self.ui_config.FOOD.SUPER.FILL if isinstance(self.food, SuperFood) else self.ui_config.FOOD.SIMPLE.FILL
+        font_family = self.ui_config.FOOD.SUPER.FONT.NAME if isinstance(self.food, SuperFood) else self.ui_config.FOOD.SIMPLE.FONT.NAME
+        font_size = self.ui_config.FOOD.SUPER.FONT.SIZE if isinstance(self.food, SuperFood) else self.ui_config.FOOD.SIMPLE.FONT.SIZE
+        food_x, food_y = self.food.position[0], self.food.position[1]
+        self.canvas.create_text(food_x + 1/2,
+                                food_y + 1/2,
+                                text=symbol,
+                                font=tkFont.Font(family=font_family, size=font_size),
+                                fill=color,
+                                tags="food")
 
     def _update_score_display(self):
-        self.current_score_label.config(text=f"Score: {self.game.score}")
-
-    def _handle_keypress(self, new_direction: Direction):
-        # Prevent immediate 180-degree turns
-        current_direction = self.game.snake.direction
-        if (new_direction == Direction.UP and current_direction == Direction.DOWN) or \
-           (new_direction == Direction.DOWN and current_direction == Direction.UP) or \
-           (new_direction == Direction.LEFT and current_direction == Direction.RIGHT) or \
-           (new_direction == Direction.RIGHT and current_direction == Direction.LEFT):
-            return
-        self.game.snake.set_direction(new_direction)
-
-    def _update_game(self):
-        if not self.game.is_game_over():
-            self.game.step() # Pass no action, game handles current direction
-            self._draw_board()
-            self._draw_snake()
-            self._draw_food()
-            self._update_score_display()
-            self._update_game()
-        else:
-            self._game_over_screen()
+        self.current_score_label.config(text=f"Score: {self.score}")
 
     def _game_over_screen(self):
         self.canvas.create_text(self.board_width / 2, self.board_height / 2 - 30,
                                 text="GAME OVER", font=("Arial", 24, "bold"), fill="red")
         self.canvas.create_text(self.board_width / 2, self.board_height / 2 + 10,
                                 text=f"Final Score: {self.game.score}", font=("Arial", 16), fill="black")
-        self.canvas.create_text(self.board_width / 2, self.board_height / 2 + 10,
-                                text=f"RESTARTING...", font=("Arial", 16), fill="black")
-        # self._restart_game()
-        restart_button = tk.Button(self.master, text="Restart", command=self._restart_game, font=("Arial", 12))
         self.canvas.create_window(self.board_width / 2, self.board_height / 2 + 60, window=restart_button)
 
     def _restart_game(self):

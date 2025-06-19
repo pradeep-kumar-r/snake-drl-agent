@@ -1,3 +1,78 @@
+UI_CONFIG:
+  TITLE: 
+    TEXT: "Snake Game"
+    PADDING: 10
+    FONT: 
+      NAME: "Arial"
+      SIZE: 16
+      STYLE: bold
+  CANVAS:
+    BG: "white"
+    FG: "black"
+    BD: 0
+    HIGHLIGHTTHICKNESS: 0
+  SCORE:
+    SIDE: LEFT
+    PADDING: 20
+    FONT:
+      NAME: "Arial"
+      SIZE: 12
+      STYLE: italic
+  LEGEND:
+    SIDE: LEFT
+    PADDING: 10
+    FONT:
+      NAME: "Arial"
+      SIZE: 10
+      STYLE: italic
+  BOARD:
+    FILL: "gray"
+    DASH: (2, 2)
+  SNAKE:
+    HEAD:
+      SYMBOL: 
+        UP: "^"
+        DOWN: "v"
+        LEFT: "<"
+        RIGHT: ">"
+      FILL: "green"
+      FONT:
+        NAME: "Arial"
+        SIZE: 6
+        STYLE: bold
+    BODY:
+      SYMBOL: "*"
+      FILL: "green"
+      FONT:
+        NAME: "Arial"
+        SIZE: 4
+        STYLE: bold
+  FOOD:
+    SIMPLE:
+      SYMBOL: "O"
+      FILL: "red"
+      FONT:
+        NAME: "Arial"
+        SIZE: 6
+        STYLE: bold
+    SUPER:
+      SYMBOL: "X"
+      FILL: "purple"
+      FONT:
+        NAME: "Arial"
+        SIZE: 6
+        STYLE: bold
+  GAME_OVER:
+    TEXT: "GAME OVER"
+    PADDING: 10
+    FILL: "red"
+    FONT:
+      NAME: "Arial"
+      SIZE: 16
+      STYLE: bold
+
+    
+
 GAME_CONFIG:
   SLEEP_PER_TIMESTEP: 0.2
   BOARD_DIM: 11 # Must be an odd number
