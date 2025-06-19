@@ -1,13 +1,10 @@
 import tkinter as tk
 from tkinter import font as tkFont
-import os
-from time import sleep
 from typing import Dict, Any, Optional
-from src.game.direction import Direction
-from src.game.food import Food, SimpleFood, SuperFood
-from src.game.game import Game
+
+from sympy import root
+from src.game.food import Food, SuperFood
 from src.game.snake import Snake
-from src.config import config
 
 
 class UI:
@@ -26,6 +23,7 @@ class UI:
         self.food = food
         self.score = score
         self.high_score = high_score
+        self.is_game_over = is_game_over
 
         self.master.title(self.ui_config.TITLE.TEXT)
 
@@ -80,7 +78,11 @@ class UI:
         # self.master.bind("<Down>", lambda event: self._handle_keypress(Direction.DOWN))
 
         self._draw_board()
-        self._update_game()
+        self._draw_snake()
+        if self.food:
+            self._draw_food()
+        if self.is_game_over:
+            self._game_over_screen()
 
     def _draw_board(self):
         self.canvas.delete("all")
@@ -134,31 +136,22 @@ class UI:
                                 fill=color,
                                 tags="food")
 
-    def _update_score_display(self):
-        self.current_score_label.config(text=f"Score: {self.score}")
-
     def _game_over_screen(self):
-        self.canvas.create_text(self.board_width / 2, self.board_height / 2 - 30,
-                                text="GAME OVER", font=("Arial", 24, "bold"), fill="red")
-        self.canvas.create_text(self.board_width / 2, self.board_height / 2 + 10,
-                                text=f"Final Score: {self.game.score}", font=("Arial", 16), fill="black")
-        self.canvas.create_window(self.board_width / 2, self.board_height / 2 + 60, window=restart_button)
-
-    def _restart_game(self):
-        self.game.reset()
-        self.high_score = self._load_high_score()
-        self._update_score_display()
-        self.canvas.delete("game_over_text")
-        self.canvas.delete("restart_button_window")
+        self.canvas.create_text(self.board_width/2, 
+                                self.board_height/2 - 30,
+                                text=self.ui_config.GAME_OVER.TEXT, 
+                                font=(self.ui_config.GAME_OVER.FONT.NAME, 
+                                      self.ui_config.GAME_OVER.FONT.SIZE, 
+                                      self.ui_config.GAME_OVER.FONT.STYLE), 
+                                fill=self.ui_config.GAME_OVER.FILL)
+        self.canvas.create_text(self.board_width/2, 
+                                self.board_height/2 + 10,
+                                text=f"Final Score: {self.score}",
+                                font=(self.ui_config.GAME_OVER.FONT.NAME, 
+                                      self.ui_config.GAME_OVER.FONT.SIZE, 
+                                      self.ui_config.GAME_OVER.FONT.STYLE), 
+                                fill=self.ui_config.GAME_OVER.FILL)
         
-        self.master.bind("<Left>", lambda event: self._handle_keypress(Direction.LEFT))
-        self.master.bind("<Right>", lambda event: self._handle_keypress(Direction.RIGHT))
-        self.master.bind("<Up>", lambda event: self._handle_keypress(Direction.UP))
-        self.master.bind("<Down>", lambda event: self._handle_keypress(Direction.DOWN))
-
-        self._update_game()
-
-if __name__ == '__main__':
-    root = tk.Tk()
-    app = GameUI(master=root)
-    root.mainloop()
+if __name__ == "__main__":
+    master = tk.Tk.master(root)
+    tk.mainloop()

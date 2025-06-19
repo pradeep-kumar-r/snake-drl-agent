@@ -1,13 +1,18 @@
 import random
+from time import sleep
+import tkinter as tk
 from typing import Optional, Literal, Tuple, Dict
 from src.game.direction import Direction
 from src.game.snake import Snake
 from src.game.food import Food, SimpleFood, SuperFood
+from src.game.ui import UI
 from src.config import config
 
 
 class Game:
-    def __init__(self, game_config=config.get_game_config()):
+    def __init__(self, 
+                 game_config=config.get_game_config(),
+                 headless=False):
         self.game_config = game_config
         self.snake: Optional[Snake] = None
         self.is_food_active: bool = False
@@ -17,6 +22,7 @@ class Game:
         self.score: int = 0
         self.is_game_over: bool = False
         self.end_state: Optional[Dict[str, int]] = None
+        self.headless = headless
         self.reset()
 
     def reset(self) -> None:
@@ -138,3 +144,15 @@ class Game:
                     
     def display_ui(self):
         ...
+        # root = tk.Tk()
+        # app = UI(master=root,
+        #         snake=Snake(board_dim=11,
+        #                     init_pos=(5, 5),
+        #                     init_length=3,
+        #                     init_direction=Direction.RIGHT),
+        #         food=Food(position=(6, 6)),
+        #         score=10,
+        #         high_score=10,
+        #         ui_config=config.get_ui_config(),
+        #         is_game_over=False)
+        # root.mainloop()

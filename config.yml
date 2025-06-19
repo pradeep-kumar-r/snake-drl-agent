@@ -68,7 +68,7 @@ UI_CONFIG:
     FILL: "red"
     FONT:
       NAME: "Arial"
-      SIZE: 16
+      SIZE: 24
       STYLE: bold
 
     
