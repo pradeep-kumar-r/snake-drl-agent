@@ -1,8 +1,6 @@
 import tkinter as tk
 from tkinter import font as tkFont
 from typing import Dict, Any, Optional
-
-from sympy import root
 from src.game.food import Food, SuperFood
 from src.game.snake import Snake
 
@@ -77,14 +75,14 @@ class UI:
         # self.master.bind("<Up>", lambda event: self._handle_keypress(Direction.UP))
         # self.master.bind("<Down>", lambda event: self._handle_keypress(Direction.DOWN))
 
-        self._draw_board()
-        self._draw_snake()
+        self.draw_board()
+        self.draw_snake()
         if self.food:
-            self._draw_food()
+            self.draw_food()
         if self.is_game_over:
-            self._game_over_screen()
+            self.game_over_screen()
 
-    def _draw_board(self):
+    def draw_board(self):
         self.canvas.delete("all")
         for x in range(0, self.board_width):
             self.canvas.create_line(x,
@@ -101,7 +99,7 @@ class UI:
                                     fill=self.ui_config.BOARD.FILL,
                                     dash=self.ui_config.BOARD.DASH)
 
-    def _draw_snake(self):
+    def draw_snake(self):
         head = self.snake.get_head()
         head_x, head_y = head.x, head.y
         self.canvas.create_text(head_x + 1/2,
@@ -123,7 +121,7 @@ class UI:
                                     fill=self.ui_config.SNAKE.BODY.FILL,
                                     tags="snake")
 
-    def _draw_food(self):
+    def draw_food(self):
         symbol = self.ui_config.FOOD.SUPER.SYMBOL if isinstance(self.food, SuperFood) else self.ui_config.FOOD.SIMPLE.SYMBOL
         color = self.ui_config.FOOD.SUPER.FILL if isinstance(self.food, SuperFood) else self.ui_config.FOOD.SIMPLE.FILL
         font_family = self.ui_config.FOOD.SUPER.FONT.NAME if isinstance(self.food, SuperFood) else self.ui_config.FOOD.SIMPLE.FONT.NAME
@@ -136,7 +134,7 @@ class UI:
                                 fill=color,
                                 tags="food")
 
-    def _game_over_screen(self):
+    def game_over_screen(self):
         self.canvas.create_text(self.board_width/2, 
                                 self.board_height/2 - 30,
                                 text=self.ui_config.GAME_OVER.TEXT, 
@@ -151,7 +149,3 @@ class UI:
                                       self.ui_config.GAME_OVER.FONT.SIZE, 
                                       self.ui_config.GAME_OVER.FONT.STYLE), 
                                 fill=self.ui_config.GAME_OVER.FILL)
-        
-if __name__ == "__main__":
-    master = tk.Tk.master(root)
-    tk.mainloop()
