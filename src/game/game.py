@@ -27,12 +27,8 @@ class Game:
         self.score: int = 0
         self.is_game_over: bool = False
         self.end_state: Optional[Dict[str, int]] = None
-        self.headless = headless
         self.ui = None
         self.root = None
-        if not self.headless:
-            self.root = tk.Tk()
-            self.root.withdraw()
         self.reset()
 
     def reset(self) -> None:
@@ -166,9 +162,10 @@ class Game:
                     
     def _init_or_update_ui(self):
         """Initialize or update the UI with current game state."""
-        if self.headless or not self.root:
-            return
-            
+        if not self.root:
+            self.root = tk.Tk()
+            self.root.withdraw()
+        
         if not self.ui:
             # Create new UI if it doesn't exist
             self.root.deiconify()  # Show the window

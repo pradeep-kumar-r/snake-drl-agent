@@ -1,10 +1,9 @@
 import torch
 from torch import nn
-from src.config import config
 
 
 class ConvDQN(nn.Module):
-    def __init__(self, num_classes: int=config.get_model_config().NUM_ACTIONS):
+    def __init__(self, num_classes: int):
         super().__init__()
         self.num_classes = num_classes
         self.conv1 = nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1)
