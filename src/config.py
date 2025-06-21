@@ -10,7 +10,7 @@ class ConfigManager:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(ConfigManager, cls).__new__(cls)
-            with open("config.yaml", "r", encoding="utf-8") as file:
+            with open("config.yml", "r", encoding="utf-8") as file:
                 cls.config = yaml.safe_load(file)
                 cls._set_config()
         return cls._instance
@@ -70,5 +70,5 @@ config = ConfigManager()
 
 # Testing configs
 if __name__ == "__main__":
-    print(config.get_data_config())
+    print(config.get_training_config())
     
