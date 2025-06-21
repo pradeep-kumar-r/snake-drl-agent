@@ -49,6 +49,9 @@ class Snake:
         head = self.body[0]
         return head in self.body[1:]
 
+    def __len__(self):
+        return len(self.body)
+    
     def get_head(self) -> Tuple[int, int]:
         return self.body[0]
 
