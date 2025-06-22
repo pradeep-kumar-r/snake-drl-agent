@@ -19,7 +19,7 @@ class BaseSnakeAgent(ABC):
         Args:
             config: Configuration object with agent parameters
         """
-        self.action_space_n = config.get_model_config().NUM_ACTIONS
+        self.action_space_n = config.get_model_config()["NUM_ACTIONS"]
         self.config = config
     
     @abstractmethod
@@ -108,19 +108,19 @@ class DQNSnakeAgent(BaseSnakeAgent):
         # Initialize optimizer
         self.optimizer = optim.AdamW(
             self.policy_net.parameters(), 
-            lr=self.model_config.LEARNING_RATE, 
+            lr=self.model_config["LEARNING_RATE"], 
             amsgrad=True
         )
         
-        buffer_capacity = self.train_config.REPLAY_MEMORY_SIZE
+        buffer_capacity = self.train_config["REPLAY_MEMORY_SIZE"]
         self.memory = ReplayBuffer(buffer_capacity)
         
-        self.batch_size = self.train_config.BATCH_SIZE
-        self.gamma = self.train_config.GAMMA
-        self.epsilon_start = self.train_config.EPSILON_START
-        self.epsilon_end = self.train_config.EPSILON_END
-        self.epsilon_decay = self.train_config.EPSILON_DECAY
-        self.target_update_frequency = self.train_config.TARGET_UPDATE_FREQUENCY
+        self.batch_size = self.train_config["BATCH_SIZE"]
+        self.gamma = self.train_config["GAMMA"]
+        self.epsilon_start = self.train_config["EPSILON_START"]
+        self.epsilon_end = self.train_config["EPSILON_END"]
+        self.epsilon_decay = self.train_config["EPSILON_DECAY"]
+        self.target_update_frequency = self.train_config["TARGET_UPDATE_FREQUENCY"]
         
         self.steps_done = 0
         self.current_epsilon = self.epsilon_start
@@ -205,7 +205,7 @@ class DQNSnakeAgent(BaseSnakeAgent):
         if not os.path.exists(path):
             os.makedirs(path)
             
-        model_path = os.path.join(path, f"{self.model_config.MODEL_NAME_PREFIX}_episode_{episode}.pth")
+        model_path = os.path.join(path, f"{self.model_config['MODEL_NAME_PREFIX']}_episode_{episode}.pth")
         
         torch.save({
             'episode': episode,

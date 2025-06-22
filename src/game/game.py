@@ -10,11 +10,9 @@ from src.game.food import Food, SimpleFood, SuperFood
 class Game:
     def __init__(self, 
                  game_config: Optional[Dict[str, Any]],
-                 data_config: Optional[Dict[str, Any]],
-                 ui_config: Optional[Dict[str, Any]] = None):
+                 data_config: Optional[Dict[str, Any]]):
         self.game_config = game_config
         self.data_config = data_config
-        self.ui_config = ui_config
         self.snake: Optional[Snake] = None
         self.is_food_active: bool = False
         self.current_food: Optional[Food] = None
@@ -27,10 +25,10 @@ class Game:
         self.reset()
 
     def reset(self) -> None:
-        self.snake = Snake(board_dim=self.game_config.BOARD_DIM,
-                           init_pos=self.game_config.SNAKE.INIT_POS,
-                           init_length=self.game_config.SNAKE.INIT_LENGTH,
-                           init_direction=self.game_config.SNAKE.INIT_DIRECTION)
+        self.snake = Snake(board_dim=self.game_config["BOARD_DIM"],
+                           init_pos=self.game_config["SNAKE"]["SNAKE_INIT_POS"],
+                           init_length=self.game_config["SNAKE"]["SNAKE_INIT_LENGTH"],
+                           init_direction=self.game_config["SNAKE"]["SNAKE_INIT_DIRECTION"])
         self._generate_or_update_food()
         self.is_food_active: bool = False
         self.current_food: Optional[Food] = None
@@ -41,7 +39,7 @@ class Game:
         
         # Read high score, default to 0 if the file doesn't exist
         try:
-            with open(self.data_config.HIGH_SCORE_FILE, "r", encoding="utf-8") as f:
+            with open(self.data_config["HIGH_SCORE_FILE_PATH"], "r", encoding="utf-8") as f:
                 self.high_score = int(f.read())
         except FileNotFoundError:
             self.high_score = 0
@@ -56,12 +54,12 @@ class Game:
         if self.steps_elapsed < 3:
             return
         
-        if not self.current_food.active or not self.is_food_active:
-            if random.random() <= self.game_config.FOOD.SUPERFOOD_PROBABILITY and self.food_count > 0:
-                self.current_food = SuperFood(board_dim=self.game_config.BOARD_DIM,
-                                    lifetime=self.game_config.FOOD.SUPERFOOD_LIFETIME)
+        if not hasattr(self.current_food, 'active') or not self.is_food_active:
+            if random.random() <= self.game_config["FOOD"]["SUPERFOOD_PROBABILITY"] and self.food_count > 0:
+                self.current_food = SuperFood(board_dim=self.game_config["BOARD_DIM"],
+                                    lifetime=self.game_config["FOOD"]["SUPERFOOD_LIFETIME"])
             else:
-                self.current_food = SimpleFood(board_dim=self.game_config.BOARD_DIM)
+                self.current_food = SimpleFood(board_dim=self.game_config["BOARD_DIM"])
             self.current_food.place_food(self.snake.get_body())
             self.is_food_active = True        
         else:
@@ -71,9 +69,9 @@ class Game:
         if not self.is_food_active:
             return
         if isinstance(self.current_food, SimpleFood):
-            self.score += self.game_config.SCORE.EAT_FOOD
+            self.score += self.game_config["SCORE"]["EAT_FOOD"]
         else: 
-            self.score += self.game_config.SCORE.XPLIER_EAT_SUPERFOOD*(1+self.current_food.remaining_steps)    
+            self.score += self.game_config["SCORE"]["XPLIER_EAT_SUPERFOOD"]*(1+self.current_food.remaining_steps)    
     
     def step(self, action: Literal[0, 1, 2, 3, 4]=0) -> Tuple[float, bool, int, int]:
         """
@@ -112,7 +110,7 @@ class Game:
             self.snake.should_grow = True
                 
         # Step 4: Check for end states (collision or if the snake has eaten all foods)
-        if self.snake.check_collision() or len(self.snake) >= self.game_config.BOARD_DIM ** 2:
+        if self.snake.check_collision() or len(self.snake) >= self.game_config["BOARD_DIM"] ** 2:
             self.is_game_over = True
             self.snake.kill()
             self._record_state()
@@ -146,9 +144,9 @@ class Game:
         }
     
     def _record_score(self):
-        with open(self.data_config.SCORES_FILE_PATH, "a", encoding="utf-8") as f:
+        with open(self.data_config["SCORES_FILE_PATH"], "a", encoding="utf-8") as f:
             f.write(f"{self.state}\n")
         
         if self.score > self.high_score:
-            with open(self.data_config.HIGH_SCORE_FILE_PATH, "w", encoding="utf-8") as f:
+            with open(self.data_config["HIGH_SCORE_FILE_PATH"], "w", encoding="utf-8") as f:
                 f.write(str(self.score))

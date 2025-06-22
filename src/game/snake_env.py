@@ -24,21 +24,20 @@ class SnakeEnv(gym.Env):
         self.training_config = app_config.get_training_config()
 
         self.game = Game(game_config=self.game_config,
-                         data_config=self.data_config,
-                         ui_config=self.ui_config)
+                         data_config=self.data_config)
         
         self.episodes_count: int = 0
         
-        self.headless: bool = not self.episodes_count % self.game_config.EPISODES_PER_RENDER == 0
+        self.headless: bool = not self.episodes_count % self.game_config["EPISODES_PER_RENDER"] == 0
         self.ui: Optional[UI] = None
         self.root: Optional[tk.Tk] = None
         self.off_screen_root: Optional[tk.Tk] = None
         self.off_screen_ui: Optional[UI] = None
         
         # Action space: 0:STILL, 1:RIGHT, 2:DOWN, 3:LEFT, 4:UP
-        self.action_space = spaces.Discrete(self.model_config.NUM_ACTIONS)
+        self.action_space = spaces.Discrete(self.model_config["NUM_ACTIONS"])
         
-        self.image_size: int = self.model_config.IMAGE_INPUT_SIZE
+        self.image_size: int = self.model_config["IMAGE_INPUT_SIZE"]
         
         # Observation space: RGB screenshot of the game
         self.observation_space = spaces.Box(
@@ -77,8 +76,7 @@ class SnakeEnv(gym.Env):
         self.episodes_count += 1
         self.game.reset()
         # self.game = Game(game_config=self.game_config,
-        #                  data_config=self.data_config,
-        #                  ui_config=self.ui_config)
+        #                  data_config=self.data_config)
         observation = self._get_obs()
         info = self._get_info()
         return observation, info
@@ -91,12 +89,12 @@ class SnakeEnv(gym.Env):
         # Update rewards accumulated
         reward = 0
         if action == 0:
-            reward += self.training_config.REWARDS.NOTHING
+            reward += self.training_config["REWARDS"]["NOTHING"]
             
         if terminated:
-            reward += self.training_config.REWARDS.COLLIDE
+            reward += self.training_config["REWARDS"]["COLLIDE"]
         else:
-            reward += self.training_config.REWARDS.MOVE
+            reward += self.training_config["REWARDS"]["MOVE"]
             
         if self.game.score > prev_score:
             reward += self.game.score - prev_score
@@ -107,8 +105,8 @@ class SnakeEnv(gym.Env):
         return observation, reward, terminated, truncated, info
 
     def render(self):
-        if self.episodes_count % self.game_config.EPISODES_PER_RENDER == 0:
-            sleep(self.game_config.SLEEP_PER_TIMESTEP)
+        if self.episodes_count % self.game_config["EPISODES_PER_RENDER"] == 0:
+            sleep(self.game_config["SLEEP_PER_TIMESTEP"])
             self._display_ui()
 
     def close(self):
