@@ -17,7 +17,7 @@ def main():
     print(f"Starting Snake game with Random Agent for {max_episodes} episodes")
     
     # Use a reasonable maximum number of steps per episode to prevent infinite loops
-    max_steps_per_episode = 100000
+    max_steps_per_episode = 10
     
     for episode in range(1, max_episodes + 1):
         obs, info = env.reset()
