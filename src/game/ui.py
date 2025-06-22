@@ -102,19 +102,17 @@ class UI:
                                     dash=self.ui_config["BOARD"]["DASH"])
 
     def _draw_snake(self):
-        head = self.snake.get_head()
-        head_x, head_y = head.x, head.y
+        head_x, head_y = self.snake.get_head()
         self.canvas.create_text(head_x + 1/2,
                                 head_y + 1/2,
-                                text=self.ui_config["SNAKE"]["HEAD"]["SYMBOL"].get(self.snake.direction, ">"),
+                                text=self.ui_config["SNAKE"]["HEAD"]["SYMBOL"].get(self.snake.get_direction(), ">"),
                                 font=tkFont.Font(family=self.ui_config["SNAKE"]["HEAD"]["FONT"]["NAME"], 
                                                  size=self.ui_config["SNAKE"]["HEAD"]["FONT"]["SIZE"], 
                                                  weight=self.ui_config["SNAKE"]["HEAD"]["FONT"]["STYLE"]),
                                 fill=self.ui_config["SNAKE"]["HEAD"]["FILL"],
                                 tags="snake")
 
-        for segment in self.snake.get_body()[1:]:
-            seg_x, seg_y = segment.x, segment.y
+        for seg_x, seg_y in self.snake.get_body()[1:]:
             self.canvas.create_text(seg_x + 1/2,
                                     seg_y + 1/2,
                                     text=self.ui_config["SNAKE"]["BODY"]["SYMBOL"],
@@ -128,7 +126,7 @@ class UI:
         color = self.ui_config["FOOD"]["SUPER"]["FILL"] if isinstance(self.food, SuperFood) else self.ui_config["FOOD"]["SIMPLE"]["FILL"]
         font_family = self.ui_config["FOOD"]["SUPER"]["FONT"]["NAME"] if isinstance(self.food, SuperFood) else self.ui_config["FOOD"]["SIMPLE"]["FONT"]["NAME"]
         font_size = self.ui_config["FOOD"]["SUPER"]["FONT"]["SIZE"] if isinstance(self.food, SuperFood) else self.ui_config["FOOD"]["SIMPLE"]["FONT"]["SIZE"]
-        food_x, food_y = self.food.position[0], self.food.position[1]
+        food_x, food_y = self.food.position
         self.canvas.create_text(food_x + 1/2,
                                 food_y + 1/2,
                                 text=symbol,
@@ -136,12 +134,6 @@ class UI:
                                 fill=color,
                                 tags="food")
         
-        # Update food lifetime label
-        if isinstance(self.food, SuperFood) and hasattr(self.food, 'remaining_steps'):
-            self.food_lifetime_label.config(text=f"Food Lifetime: {self.food.remaining_steps}")
-        else:
-            self.food_lifetime_label.config(text="Food Lifetime: -")
-
     def _game_over_screen(self):
         self.canvas.create_text(self.board_width/2, 
                                 self.board_height/2 - 30,
@@ -190,6 +182,7 @@ class UI:
         
         if self.food:
             self._draw_food()
+            self._update_food_lifetime()
         
         if is_game_over:
             self._game_over_screen()

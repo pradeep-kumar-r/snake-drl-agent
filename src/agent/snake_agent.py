@@ -112,8 +112,7 @@ class DQNSnakeAgent(BaseSnakeAgent):
             amsgrad=True
         )
         
-        buffer_capacity = self.train_config["REPLAY_MEMORY_SIZE"]
-        self.memory = ReplayBuffer(buffer_capacity)
+        self.memory = ReplayBuffer(self.train_config["REPLAY_MEMORY_SIZE"])
         
         self.batch_size = self.train_config["BATCH_SIZE"]
         self.gamma = self.train_config["GAMMA"]

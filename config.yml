@@ -7,27 +7,27 @@ UI_CONFIG:
       SIZE: 16
       STYLE: bold
   CANVAS:
-    BG: "white"
-    FG: "black"
+    BG: "black"
+    FG: "white"
     BD: 0
     HIGHLIGHTTHICKNESS: 0
   SCORE:
-    SIDE: LEFT
+    SIDE: left
     PADDING: 20
     FONT:
       NAME: "Arial"
       SIZE: 12
       STYLE: italic
   LEGEND:
-    SIDE: LEFT
+    SIDE: left
     PADDING: 10
     FONT:
       NAME: "Arial"
       SIZE: 10
       STYLE: italic
   BOARD:
-    FILL: "gray"
-    DASH: (2, 2)
+    FILL: "black"
+    DASH: 2
   SNAKE:
     HEAD:
       SYMBOL: 
@@ -74,7 +74,7 @@ UI_CONFIG:
 GAME_CONFIG:
   SLEEP_PER_TIMESTEP: 0.2
   BOARD_DIM: 11 # Must be an odd number
-  EPISODES_PER_RENDER: 20
+  EPISODES_PER_RENDER: 2
   FOOD:
     SUPERFOOD_PROBABILITY: 0.1
     SUPERFOOD_LIFETIME: 15
@@ -109,7 +109,8 @@ TRAINING_CONFIG:
     COLLIDE: -100
     NOTHING: 0.1
     MOVE: -1
-  MAX_TRAINING_EPISODES: 10000
+  MAX_TRAINING_EPISODES: 10 # Change during actual PROD
+  MAX_TIMESTEPS_PER_EPISODE: 100 # Change during actual PROD
   EPISODES_PER_CHECKPOINT: 100
   LEARNING_RATE: 0.0001
   REPLAY_MEMORY_SIZE: 500

@@ -28,7 +28,7 @@ class Game:
         self.snake = Snake(board_dim=self.game_config["BOARD_DIM"],
                            init_pos=self.game_config["SNAKE"]["SNAKE_INIT_POS"],
                            init_length=self.game_config["SNAKE"]["SNAKE_INIT_LENGTH"],
-                           init_direction=self.game_config["SNAKE"]["SNAKE_INIT_DIRECTION"])
+                           init_direction=getattr(Direction, self.game_config["SNAKE"]["SNAKE_INIT_DIRECTION"]))
         self._generate_or_update_food()
         self.is_food_active: bool = False
         self.current_food: Optional[Food] = None

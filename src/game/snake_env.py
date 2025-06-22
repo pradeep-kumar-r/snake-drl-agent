@@ -105,9 +105,11 @@ class SnakeEnv(gym.Env):
         return observation, reward, terminated, truncated, info
 
     def render(self):
-        if self.episodes_count % self.game_config["EPISODES_PER_RENDER"] == 0:
+        if self.episodes_count == 0 or self.episodes_count % self.game_config["EPISODES_PER_RENDER"] == 0:
             sleep(self.game_config["SLEEP_PER_TIMESTEP"])
             self._display_ui()
+            if self.root:
+                self.root.update()
 
     def close(self):
         self._cleanup_ui()
@@ -115,6 +117,9 @@ class SnakeEnv(gym.Env):
     def _display_ui(self):
         if not self.root:
             self.root = tk.Tk()
+            self.root.title("Snake Game")
+            # Set window to be on top
+            self.root.attributes('-topmost', True)
             self.root.deiconify()
             self.ui = UI(
                 master=self.root,
@@ -123,8 +128,9 @@ class SnakeEnv(gym.Env):
                 food=self.game.current_food,
                 score=getattr(self.game, 'score', 0),
                 high_score=getattr(self.game, 'high_score', 0)
-            ) 
+            )
         self.ui.full_render()
+        self.root.update()
     
     def _cleanup_ui(self):
         if self.root:

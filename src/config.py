@@ -27,7 +27,7 @@ class ConfigManager:
         # REMINDER - Needs to be updated at the end based on all configs added
         b = cls.game_config["BOARD_DIM"] // 2
         a = max(0, cls.game_config["SNAKE"]["SNAKE_INIT_LENGTH"] - b - 1)
-        d = Direction[cls.game_config["SNAKE"]["SNAKE_INIT_DIRECTION"]].value
+        d = getattr(Direction, cls.game_config["SNAKE"]["SNAKE_INIT_DIRECTION"]).value
         cls.game_config["SNAKE"]["SNAKE_INIT_POS"] = np.dot(d, (a, b)), np.dot(d, (b, a))
         
         cls.data_config["DATA_FOLDER_PATH"] = Path(cls.data_config["DATA_FOLDER_PATH"])
@@ -40,6 +40,8 @@ class ConfigManager:
         
         cls.model_config["MODELS_FOLDER_PATH"] = Path(cls.model_config["MODELS_FOLDER_PATH"])
         cls.model_config["IMAGE_INPUT_SIZE"] = cls.game_config["BOARD_DIM"]
+        
+        cls.ui_config["BOARD_DIM"] = cls.game_config["BOARD_DIM"] * 50
     
     @classmethod
     def get_data_config(cls):
