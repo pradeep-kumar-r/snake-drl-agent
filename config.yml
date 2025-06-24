@@ -1,75 +1,56 @@
 UI_CONFIG:
+  CELL_SIZE_IN_PIXELS: 30
+  EXTRA_WINDOW_HEIGHT: 100
   TITLE: 
     TEXT: "Snake Game"
-    PADDING: 10
+    COLOUR: white
+    TOP_PADDING: 20
     FONT: 
       NAME: "Arial"
       SIZE: 16
-      STYLE: bold
-  CANVAS:
-    BG: "black"
-    FG: "white"
-    BD: 0
-    HIGHLIGHTTHICKNESS: 0
   SCORE:
-    SIDE: left
-    PADDING: 20
+    COLOUR: white
+    BOTTOM_PADDING: 10
     FONT:
       NAME: "Arial"
       SIZE: 12
-      STYLE: italic
-  LEGEND:
-    SIDE: left
-    PADDING: 10
+  FOOD_LABEL:
+    COLOUR: white
+    BOTTOM_PADDING: 10
     FONT:
       NAME: "Arial"
-      SIZE: 10
-      STYLE: italic
-  BOARD:
-    FILL: "black"
-    DASH: 2
-  SNAKE:
-    HEAD:
-      SYMBOL: 
-        UP: "^"
-        DOWN: "v"
-        LEFT: "<"
-        RIGHT: ">"
-      FILL: "green"
-      FONT:
-        NAME: "Arial"
-        SIZE: 6
-        STYLE: bold
-    BODY:
-      SYMBOL: "*"
-      FILL: "green"
-      FONT:
-        NAME: "Arial"
-        SIZE: 4
-        STYLE: bold
+      SIZE: 12
   FOOD:
     SIMPLE:
       SYMBOL: "O"
-      FILL: "red"
+      FILL: red
       FONT:
         NAME: "Arial"
-        SIZE: 6
-        STYLE: bold
+        SIZE: 8
+        COLOUR: white
     SUPER:
       SYMBOL: "X"
-      FILL: "purple"
+      FILL: purple
       FONT:
         NAME: "Arial"
-        SIZE: 6
-        STYLE: bold
-  GAME_OVER:
-    TEXT: "GAME OVER"
+        SIZE: 8
+        COLOUR: white
+  BOARD:
     PADDING: 10
-    FILL: "red"
+    FILL: black
+  SNAKE:
+    HEAD:
+      FILL: green
+    BODY:
+      FILL: green
+  GAME_OVER_LABEL:
+    TEXT: "GAME OVER"
+    FILL: white
     FONT:
       NAME: "Arial"
       SIZE: 24
       STYLE: bold
+      COLOUR: red
 
 GAME_CONFIG:
   SLEEP_PER_TIMESTEP: 0.2
@@ -81,7 +62,7 @@ GAME_CONFIG:
   SNAKE:
     SNAKE_INIT_LENGTH: 3 # Recommended to be between 3 and 5
     SNAKE_INIT_DIRECTION: RIGHT # Must be one of RIGHT, LEFT, UP or DOWN
-    SNAKE_INIT_POS: (0,0) # SAMPLE - OVERWRITTEN LATER
+    SNAKE_INIT_POS: (0,0) # SAMPLE - AUTOCALCULATED & OVERWRITTEN LATER
   SCORE:
     EAT_FOOD: 10
     XPLIER_EAT_SUPERFOOD: 10
@@ -100,7 +81,7 @@ MODEL_CONFIG:
   NUM_ACTIONS: 5
   MODELS_FOLDER_PATH: src/models
   MODEL_NAME_PREFIX: snake_model_
-  IMAGE_INPUT_SIZE: 224 # SAMPLE - OVERWRITTEN LATER
+  IMAGE_INPUT_SIZE: (720, 1280) # SAMPLE - AUTOCALCULATED & OVERWRITTEN LATER
   
 TRAINING_CONFIG:
   REWARDS:

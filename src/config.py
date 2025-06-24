@@ -39,9 +39,10 @@ class ConfigManager:
         cls.logs_config["LOGS_FOLDER_PATH"] = Path(cls.logs_config["LOGS_FOLDER_PATH"])
         
         cls.model_config["MODELS_FOLDER_PATH"] = Path(cls.model_config["MODELS_FOLDER_PATH"])
-        cls.model_config["IMAGE_INPUT_SIZE"] = cls.game_config["BOARD_DIM"]
+        cls.model_config["IMAGE_INPUT_SIZE"] = (cls.game_config["BOARD_DIM"] * cls.ui_config["CELL_SIZE_IN_PIXELS"],
+                                                cls.game_config["BOARD_DIM"] * cls.ui_config["CELL_SIZE_IN_PIXELS"] + cls.ui_config["EXTRA_WINDOW_HEIGHT"])
         
-        cls.ui_config["BOARD_DIM"] = cls.game_config["BOARD_DIM"] * 50
+        cls.ui_config["BOARD_DIM"] = cls.game_config["BOARD_DIM"]
     
     @classmethod
     def get_data_config(cls):
