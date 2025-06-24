@@ -41,6 +41,7 @@ UI_CONFIG:
   SNAKE:
     HEAD:
       FILL: green
+      STRETCH: 8
     BODY:
       FILL: green
   GAME_OVER_LABEL:
