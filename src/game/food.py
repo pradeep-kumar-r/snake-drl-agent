@@ -40,6 +40,11 @@ class SimpleFood(Food):
 
     def update(self) -> None:
         pass
+    
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, SimpleFood):
+            return False
+        return self.position == other.position
 
 
 class SuperFood(Food):
@@ -67,3 +72,8 @@ class SuperFood(Food):
             self.remaining_steps -= 1
             if self.remaining_steps < 0:
                 self.active = False
+                
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, SuperFood):
+            return False
+        return self.position == other.position

@@ -1,209 +1,351 @@
-import tkinter as tk
-from tkinter import font as tkFont
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple, List
+import pygame
+import numpy as np
 from src.game.food import Food, SuperFood
 from src.game.snake import Snake
+from src.game.colour import Colour
 
 
 class UI:
-    def __init__(self, 
-                 master, 
+    def __init__(self,
                  ui_config: Dict[str, Any],
                  snake: Snake,
-                 food: Optional[Food],
+                 episode: int,
+                 food: Optional[Food] = None,
                  score: Optional[int] = 0,
                  high_score: Optional[int] = 0):
-        self.master = master
+        pygame.init()
         self.ui_config = ui_config
-        self.board_width = self.board_height = self.ui_config["BOARD_DIM"]
-        self.snake = snake
-        self.food = food
-        self.score = score
-        self.high_score = high_score
-
-    def _draw_title(self):
-        self.master.title(self.ui_config["TITLE"]["TEXT"])
-        self.title_label = tk.Label(self.master, 
-                                    text=self.ui_config["TITLE"]["TEXT"], 
-                                    font=(self.ui_config["TITLE"]["FONT"]["NAME"], 
-                                          self.ui_config["TITLE"]["FONT"]["SIZE"], 
-                                          self.ui_config["TITLE"]["FONT"]["STYLE"]))
-        self.title_label.pack(pady=self.ui_config["TITLE"]["PADDING"])
-
-    def _draw_game_canvas(self):
-        self.canvas = tk.Canvas(self.master, 
-                                width=self.board_width, 
-                                height=self.board_height, 
-                                bg=self.ui_config["CANVAS"]["BG"], 
-                                bd=self.ui_config["CANVAS"]["BD"], 
-                                highlightthickness=self.ui_config["CANVAS"]["HIGHLIGHTTHICKNESS"])
-        self.canvas.pack()
-
-    def _draw_score_labels(self):
-        self.score_frame = tk.Frame(self.master)
-        self.score_frame.pack(pady=self.ui_config["SCORE"]["PADDING"])
-
-        self.current_score_label = tk.Label(self.score_frame, 
-                                            text=f"Current Score: {self.score}", 
-                                            font=(self.ui_config["SCORE"]["FONT"]["NAME"], 
-                                                  self.ui_config["SCORE"]["FONT"]["SIZE"], 
-                                                  self.ui_config["SCORE"]["FONT"]["STYLE"]))
-        self.current_score_label.pack(side=self.ui_config["SCORE"]["SIDE"], 
-                                      padx=self.ui_config["SCORE"]["PADDING"])
-
-        self.high_score_label = tk.Label(self.score_frame, 
-                                         text=f"Previous High Score: {self.high_score}", 
-                                         font=(self.ui_config["SCORE"]["FONT"]["NAME"], 
-                                               self.ui_config["SCORE"]["FONT"]["SIZE"], 
-                                               self.ui_config["SCORE"]["FONT"]["STYLE"]))
-        self.high_score_label.pack(side=self.ui_config["SCORE"]["SIDE"], 
-                                   padx=self.ui_config["SCORE"]["PADDING"])
-
+        self.board_width: int = self.ui_config["BOARD_DIM"]
+        self.board_height: int = self.ui_config["BOARD_DIM"]
+        self.cell_size: int = self.ui_config["CELL_SIZE_IN_PIXELS"]
+        self.snake: Snake = snake
+        self.episode: int = episode
+        self.food: Optional[Food] = food
+        self.score: int = score
+        self.high_score: int = high_score
+        
+        self.window_width: int = self.board_width * self.cell_size
+        self.window_height: int = self.board_height * self.cell_size + self.ui_config["EXTRA_WINDOW_HEIGHT"]
+        
+        self.screen: Optional[pygame.Surface] = None
+        self.font_title: Optional[pygame.font.Font] = None
+        self.font_score: Optional[pygame.font.Font] = None
+        self.title_rect: Optional[pygame.Rect] = None
+        self.score_rect: Optional[pygame.Rect] = None
+        self.food_lifetime_rect: Optional[pygame.Rect] = None
+        self.board_rect: Optional[pygame.Rect] = None
+        self.snake_rect: Optional[pygame.Rect] = None
+        self.food_rect: Optional[pygame.Rect] = None
+        self.game_over_rect: Optional[pygame.Rect] = None
+        self.font_game_over: Optional[pygame.font.Font] = None
+        self._is_initialized: bool = False
+        self.headless_surface: Optional[pygame.Surface] = None
     
-    def _draw_legend(self):
-        self.legend_label = tk.Label(self.master, 
-                                     text="Legend: \nSnake: ***> | Simple Food: O | Super Food: X", 
-                                     font=(self.ui_config["LEGEND"]["FONT"]["NAME"], 
-                                           self.ui_config["LEGEND"]["FONT"]["SIZE"],
-                                           self.ui_config["LEGEND"]["FONT"]["STYLE"]))
-        self.legend_label.pack(pady=self.ui_config["LEGEND"]["PADDING"])
-        
-    def _draw_food_lifetime_label(self):
-        self.food_lifetime_frame = tk.Frame(self.master)
-        self.food_lifetime_frame.pack(pady=5)
-        
-        self.food_lifetime_label = tk.Label(self.food_lifetime_frame,
-                                           text="Food Lifetime: -",
-                                           font=(self.ui_config["SCORE"]["FONT"]["NAME"], 
-                                                 self.ui_config["SCORE"]["FONT"]["SIZE"], 
-                                                 self.ui_config["SCORE"]["FONT"]["STYLE"]))
-        self.food_lifetime_label.pack()
-
-        # self.master.bind("<Left>", lambda event: self._handle_keypress(Direction.LEFT))
-        # self.master.bind("<Right>", lambda event: self._handle_keypress(Direction.RIGHT))
-        # self.master.bind("<Up>", lambda event: self._handle_keypress(Direction.UP))
-        # self.master.bind("<Down>", lambda event: self._handle_keypress(Direction.DOWN))
-
-    def _draw_board(self):
-        self.canvas.delete("all")
-        for x in range(0, self.board_width):
-            self.canvas.create_line(x,
-                                    0,
-                                    x,
-                                    self.board_height,
-                                    fill=self.ui_config["BOARD"]["FILL"],
-                                    dash=self.ui_config["BOARD"]["DASH"])
-        for y in range(0, self.board_height):
-            self.canvas.create_line(0, 
-                                    y,
-                                    self.board_width, 
-                                    y, 
-                                    fill=self.ui_config["BOARD"]["FILL"],
-                                    dash=self.ui_config["BOARD"]["DASH"])
-
-    def _draw_snake(self):
-        head_x, head_y = self.snake.get_head()
-        self.canvas.create_text(head_x + 1/2,
-                                head_y + 1/2,
-                                text=self.ui_config["SNAKE"]["HEAD"]["SYMBOL"].get(self.snake.get_direction(), ">"),
-                                font=tkFont.Font(family=self.ui_config["SNAKE"]["HEAD"]["FONT"]["NAME"], 
-                                                 size=self.ui_config["SNAKE"]["HEAD"]["FONT"]["SIZE"], 
-                                                 weight=self.ui_config["SNAKE"]["HEAD"]["FONT"]["STYLE"]),
-                                fill=self.ui_config["SNAKE"]["HEAD"]["FILL"],
-                                tags="snake")
-
-        for seg_x, seg_y in self.snake.get_body()[1:]:
-            self.canvas.create_text(seg_x + 1/2,
-                                    seg_y + 1/2,
-                                    text=self.ui_config["SNAKE"]["BODY"]["SYMBOL"],
-                                    font=tkFont.Font(family=self.ui_config["SNAKE"]["BODY"]["FONT"]["NAME"], 
-                                                     size=self.ui_config["SNAKE"]["BODY"]["FONT"]["SIZE"]),
-                                    fill=self.ui_config["SNAKE"]["BODY"]["FILL"],
-                                    tags="snake")
-
-    def _draw_food(self):
-        symbol = self.ui_config["FOOD"]["SUPER"]["SYMBOL"] if isinstance(self.food, SuperFood) else self.ui_config["FOOD"]["SIMPLE"]["SYMBOL"]
-        color = self.ui_config["FOOD"]["SUPER"]["FILL"] if isinstance(self.food, SuperFood) else self.ui_config["FOOD"]["SIMPLE"]["FILL"]
-        font_family = self.ui_config["FOOD"]["SUPER"]["FONT"]["NAME"] if isinstance(self.food, SuperFood) else self.ui_config["FOOD"]["SIMPLE"]["FONT"]["NAME"]
-        font_size = self.ui_config["FOOD"]["SUPER"]["FONT"]["SIZE"] if isinstance(self.food, SuperFood) else self.ui_config["FOOD"]["SIMPLE"]["FONT"]["SIZE"]
-        food_x, food_y = self.food.position
-        self.canvas.create_text(food_x + 1/2,
-                                food_y + 1/2,
-                                text=symbol,
-                                font=tkFont.Font(family=font_family, size=font_size),
-                                fill=color,
-                                tags="food")
-        
-    def _game_over_screen(self):
-        self.canvas.create_text(self.board_width/2, 
-                                self.board_height/2 - 30,
-                                text=self.ui_config["GAME_OVER"]["TEXT"], 
-                                font=(self.ui_config["GAME_OVER"]["FONT"]["NAME"], 
-                                      self.ui_config["GAME_OVER"]["FONT"]["SIZE"], 
-                                      self.ui_config["GAME_OVER"]["FONT"]["STYLE"]), 
-                                fill=self.ui_config["GAME_OVER"]["FILL"])
-        self.canvas.create_text(self.board_width/2, 
-                                self.board_height/2 + 10,
-                                text=f"Final Score: {self.score}",
-                                font=(self.ui_config["GAME_OVER"]["FONT"]["NAME"], 
-                                      self.ui_config["GAME_OVER"]["FONT"]["SIZE"], 
-                                      self.ui_config["GAME_OVER"]["FONT"]["STYLE"]), 
-                                fill=self.ui_config["GAME_OVER"]["FILL"])
+    def _initialize_fonts(self) -> None:
+        self.font_title = pygame.font.SysFont(
+            self.ui_config["TITLE"]["FONT"]["NAME"], 
+            self.ui_config["TITLE"]["FONT"]["SIZE"]
+        )
+        self.font_score = pygame.font.SysFont(
+            self.ui_config["SCORE"]["FONT"]["NAME"], 
+            self.ui_config["SCORE"]["FONT"]["SIZE"]
+        )
+        self.font_game_over = pygame.font.SysFont(
+            self.ui_config["GAME_OVER"]["FONT"]["NAME"], 
+            self.ui_config["GAME_OVER"]["FONT"]["SIZE"]
+        )
     
-    def _update_scores(self):
-        if hasattr(self, 'current_score_label'):
-            self.current_score_label.config(text=f"Score: {self.score}")
-        if hasattr(self, 'high_score_label') and self.high_score is not None:
-            self.high_score_label.config(text=f"High Score: {self.high_score}")
-
-    def _update_food_lifetime(self):
-        if (hasattr(self, 'food_lifetime_label') and 
-            self.food and 
+    def _initialize_display(self) -> None:
+        self.screen = pygame.display.set_mode((self.window_width, self.window_height))
+        pygame.display.set_caption(self.ui_config["TITLE"]["TEXT"])
+        self._initialize_fonts()
+        self.headless_surface = pygame.Surface((self.window_width, self.window_height))
+        self._is_initialized = True
+    
+    def _draw_title(self, 
+                    surface: pygame.Surface, 
+                    center_y: Optional[int] = None) -> pygame.Rect:
+        if center_y is None:
+            center_y = self.ui_config['TITLE']['TOP_PADDING']
+        title_text = self.font_title.render(
+            f"{self.ui_config['TITLE']['TEXT']}: Episode {self.episode}",
+            True,
+            Colour(self.ui_config['TITLE']['COLOUR']).value,
+        )
+        title_rect = title_text.get_rect(
+            center=(self.window_width // 2, center_y)
+        )
+        surface.blit(title_text, title_rect)
+        self.title_rect = title_rect
+        return title_rect
+    
+    def _draw_score_labels(self, 
+                           surface: pygame.Surface,
+                           bottom_y: Optional[int] = None,
+                           ) -> pygame.Rect:
+        if bottom_y is None:
+            bottom_y = self.ui_config['SCORE']['BOTTOM_PADDING']
+        score_text = self.font_score.render(
+            f"Current Score: {self.score}\nHigh Score: {self.high_score}",
+            True,
+            Colour(self.ui_config["SCORE"]["COLOUR"]).value,
+        )
+        score_rect = score_text.get_rect(
+            bottomcenter=(self.window_width // 4, bottom_y)
+        )
+        surface.blit(score_text, score_rect)
+        self.score_rect = score_rect
+        return score_rect
+        
+    def _draw_food_lifetime_label(self, 
+                                  surface: pygame.Surface,
+                                  bottom_y: Optional[int] = None,
+                                  ) -> pygame.Rect:
+        if bottom_y is None:
+            bottom_y = self.ui_config['SCORE']['BOTTOM_PADDING']
+        lifetime_text = "-"
+        if (self.food and 
             hasattr(self.food, 'remaining_steps') and 
             self.food.remaining_steps is not None):
-            self.food_lifetime_label.config(text=f"Food Lifetime: {self.food.remaining_steps}")
-        elif hasattr(self, 'food_lifetime_label'):
-            self.food_lifetime_label.config(text="Food Lifetime: -")
+            lifetime_text = str(self.food.remaining_steps)
+        
+        food_lifetime_text = self.font_score.render(
+            f"Food Lifetime:\n{lifetime_text}",
+            True,
+            Colour(self.ui_config["FOOD_LABEL"]["COLOUR"]).value
+        )
+        food_lifetime_rect = food_lifetime_text.get_rect(
+            bottomcenter=(self.window_width * 3 // 4, bottom_y)
+        )
+        surface.blit(food_lifetime_text, food_lifetime_rect)
+        self.food_lifetime_rect = food_lifetime_rect
+        return food_lifetime_rect
     
-    def full_render(self, is_game_over=False):
-        if not self.master.winfo_ismapped():
-            self.master.deiconify()
+    def _draw_board(self, 
+                    surface: pygame.Surface, 
+                    title_rect: Optional[pygame.Rect] = None,
+                    score_rect: Optional[pygame.Rect] = None,
+                    food_lifetime_rect: Optional[pygame.Rect] = None) -> pygame.Rect:
+        surface.fill(Colour('black').value)
+        pad = self.ui_config['BOARD']['PADDING']
+        board_topleft_x, board_topleft_y = (pad, 
+                                            title_rect.bottom + pad if title_rect else pad
+        )
+        board_bottomright_x, board_bottomright_y = (self.window_width - pad, 
+                                                    min(score_rect.bottom, food_lifetime_rect.bottom) - pad
+        )
         
-        if not hasattr(self, '_is_initialized'):
-            self._draw_title()
-            self._draw_game_canvas()
-            self._draw_score_labels()
-            self._draw_legend()
-            self._draw_food_lifetime_label()
-            self._is_initialized = True
+        # Draw bounding box
+        board_rect = pygame.draw.rect(
+            surface,
+            Colour('white').value,
+            (board_topleft_x, board_topleft_y, board_bottomright_x - board_topleft_x, board_bottomright_y - board_topleft_y),
+            3
+        )
         
-        self._draw_board()
-        self._draw_snake()
+        # Draw grid lines
         
-        if self.food:
-            self._draw_food()
-            self._update_food_lifetime()
+        for i in range(board_topleft_x + self.cell_size, board_bottomright_x + 1, self.cell_size):
+            pygame.draw.line(
+                surface,
+                Colour('light_grey').value,
+                (i, board_topleft_y),
+                (i, board_bottomright_y),
+                1
+            )
         
-        if is_game_over:
-            self._game_over_screen()
+        for i in range(board_topleft_y + self.cell_size, board_bottomright_y + 1, self.cell_size):
+            pygame.draw.line(
+                surface,
+                Colour('light_grey').value,
+                (board_topleft_x, i),
+                (board_bottomright_x, i),
+                1
+            )
+        self.board_rect = board_rect
+        return board_rect
+    
+    def _draw_snake(self, 
+                    surface: pygame.Surface, 
+                    board_rect: pygame.Rect) -> List[pygame.Rect]:
+        snake_pygame_objects: List[pygame.Rect] = []
+        # Draw head
+        head_x, head_y = self.snake.body[0]
+        head_y1 = self.board_height - head_y
+        head_top_y = board_rect.top + head_y1 * self.cell_size - self.ui_config["SNAKE"]["HEAD"]["STRETCH"]
+        head_center_y = board_rect.top + head_y1 * self.cell_size + self.cell_size // 2
+        head_bottom_y = board_rect.top + head_y1 * self.cell_size + self.cell_size + self.ui_config["SNAKE"]["HEAD"]["STRETCH"]
+        head_left_x = board_rect.left + head_x * self.cell_size - self.ui_config["SNAKE"]["HEAD"]["STRETCH"]
+        head_right_x = board_rect.left + head_x * self.cell_size + self.cell_size + self.ui_config["SNAKE"]["HEAD"]["STRETCH"]
+        head_polygon = pygame.draw.polygon(
+            surface,
+            Colour(self.ui_config["SNAKE"]["HEAD"]["FILL"]).value,
+            [
+               (head_left_x, head_top_y),
+               (head_left_x, head_bottom_y),
+               (head_right_x, head_center_y)
+            ]
+        )
+        snake_pygame_objects.append(head_polygon)
         
-        self.master.update_idletasks()
-
-    def off_screen_render(self):
-        if self.master.winfo_ismapped():
-            self.master.withdraw()
+        # Draw body
+        body_radius = self.cell_size * 2 // 3
+        for x, y in self.snake.body[1:]:
+            y1 = self.board_height - y
+            body_center_x, body_center_y = (board_rect.left + x * self.cell_size + self.cell_size // 2, 
+                                            board_rect.top + y1 * self.cell_size + self.cell_size // 2)
+            body_circle = pygame.draw.circle(
+                surface,
+                Colour(self.ui_config["SNAKE"]["BODY"]["FILL"]).value,
+                (body_center_x, body_center_y),
+                body_radius
+            )
+            snake_pygame_objects.append(body_circle)
+        self.snake_rect = snake_pygame_objects
+        return snake_pygame_objects
+    
+    def _draw_food(self, 
+                   surface: pygame.Surface, 
+                   board_rect: pygame.Rect) -> pygame.Rect:
+        if not self.food:
+            return
+        food_x, food_y = self.food.position
+        food_y = self.board_height - food_y
+        food_center_x, food_center_y = (board_rect.left + food_x * self.cell_size + self.cell_size // 2, 
+                                        board_rect.top + food_y * self.cell_size + self.cell_size // 2)
+        is_super_food = isinstance(self.food, SuperFood)
+        fill_color = Colour(self.ui_config["FOOD"]["SUPER"]["FILL"]).value if is_super_food else Colour(self.ui_config["FOOD"]["SIMPLE"]["FILL"]).value
+        symbol = self.ui_config["FOOD"]["SUPER"]["SYMBOL"] if is_super_food else self.ui_config["FOOD"]["SIMPLE"]["SYMBOL"]
+        font_name = self.ui_config["FOOD"]["SUPER"]["FONT"]["NAME"] if is_super_food else self.ui_config["FOOD"]["SIMPLE"]["FONT"]["NAME"]
+        font_size = self.ui_config["FOOD"]["SUPER"]["FONT"]["SIZE"] if is_super_food else self.ui_config["FOOD"]["SIMPLE"]["FONT"]["SIZE"]
+        font_color = Colour(self.ui_config["FOOD"]["SUPER"]["FONT"]["COLOUR"]).value if is_super_food else Colour(self.ui_config["FOOD"]["SIMPLE"]["FONT"]["COLOUR"]).value
         
-        if not hasattr(self, 'canvas'):
-            self._draw_game_canvas()
+        pygame.draw.circle(
+            surface,
+            fill_color,
+            (food_center_x, food_center_y),
+            self.cell_size // 2 - 2
+        )
         
-        self._draw_board()
-        self._draw_snake()
+        food_text = pygame.font.SysFont(
+            font_name,
+            font_size
+        ).render(symbol, True, font_color)
         
-        if self.food:
-            self._draw_food()
-            
-        # if self.is_game_over:
-        #     self._game_over_screen()
+        food_rect = food_text.get_rect(
+            center=(food_center_x, food_center_y)
+        )
+        surface.blit(food_text, food_rect)
+        self.food_rect = food_rect
+        return food_rect
+    
+    def _game_over_screen(self, 
+                          surface: pygame.Surface,
+                          board_rect: pygame.Rect) -> pygame.Rect:
+        overlay = pygame.Surface((self.window_width, self.window_height))
+        overlay.set_alpha(180)
+        overlay.fill(Colour(self.ui_config["GAME_OVER_LABEL"]["FILL"]["COLOUR"]).value)
+        surface.blit(overlay, (0, 0))
         
-        self.canvas.update_idletasks()
-            
+        game_over_text = self.font_game_over.render(
+            f"{self.ui_config['GAME_OVER_LABEL']['TEXT']}\nFinal Score: {self.score}",
+            True,
+            Colour(self.ui_config['GAME_OVER_LABEL']['FONT']['COLOUR']).value
+        )
+        game_over_rect = game_over_text.get_rect(
+            center=board_rect.center
+        )
+        surface.blit(game_over_text, game_over_rect)
+        self.game_over_rect = game_over_rect
+        return game_over_rect
+    
+    def _update_score_labels(self, surface: pygame.Surface, new_score: int) -> pygame.Rect:
+        if self.score == new_score:
+            return
+        self.score = new_score
+        score_rect = self._draw_score_labels(surface)
+        return score_rect
+    
+    def _update_snake(self, surface: pygame.Surface, new_snake: Snake) -> pygame.Rect:
+        if self.snake == new_snake:
+            return
+        self.snake = new_snake
+        snake_rect = self._draw_snake(surface, board_rect=self.board_rect)
+        return snake_rect
+    
+    def _update_food(self, surface: pygame.Surface, new_food: Food) -> pygame.Rect:
+        if self.food != new_food:
+            self.food = new_food
+        food_rect = self._draw_food(surface, board_rect=self.board_rect)
+        return food_rect
+    
+    def _update_food_lifetime(self, surface: pygame.Surface) -> pygame.Rect:
+        food_lifetime_rect = self._draw_food_lifetime_label(surface)
+        return food_lifetime_rect
+    
+    def full_render(self, 
+                    is_game_over: bool = False,
+                    new_snake: Optional[Snake] = None,
+                    new_food: Optional[Food] = None,
+                    new_score: Optional[int] = None
+                    ) -> None:
+        if not self._is_initialized:
+            self._initialize_display()
+            _ = self._draw_title(self.screen)
+            _ = self._draw_food_lifetime_label(self.screen)
+            _ = self._draw_score_labels(self.screen)
+            _ = self._draw_board(self.screen, 
+                                title_rect=self.title_rect,
+                                score_rect=self.score_rect,
+                                food_lifetime_rect=self.food_lifetime_rect)
+            _ = self._draw_snake(self.screen, board_rect=self.board_rect)
+            if self.food:
+                _ = self._draw_food(self.screen, board_rect=self.board_rect)
+            if is_game_over:
+                _ = self._game_over_screen(self.screen, board_rect=self.board_rect)
+            pygame.display.flip()
+        else:
+            _ = self._update_food_lifetime(self.screen)
+            _ = self._update_score_labels(self.screen, new_score)
+            _ = self._update_snake(self.screen, new_snake)
+            _ = self._update_food(self.screen, new_food)
+            if is_game_over:
+                _ = self._game_over_screen(self.screen, board_rect=self.board_rect)
+            pygame.display.update()
+    
+    def headless_render(self, 
+                        is_game_over: bool = False,
+                        new_snake: Optional[Snake] = None,
+                        new_food: Optional[Food] = None,
+                        new_score: Optional[int] = None) -> Tuple[np.ndarray, Tuple[int, int]]:
+        if not self._is_initialized:
+            self._initialize_display()
+            _ = self._draw_title(self.headless_surface)
+            _ = self._draw_food_lifetime_label(self.headless_surface)
+            _ = self._draw_score_labels(self.headless_surface)
+            _ = self._draw_board(self.headless_surface, 
+                                title_rect=self.title_rect,
+                                score_rect=self.score_rect,
+                                food_lifetime_rect=self.food_lifetime_rect)
+            _ = self._draw_snake(self.headless_surface, board_rect=self.board_rect)
+            if self.food:
+                _ = self._draw_food(self.headless_surface, board_rect=self.board_rect)
+            if is_game_over:
+                _ = self._game_over_screen(self.headless_surface, board_rect=self.board_rect)
+        else:
+            _ = self._draw_food_lifetime_label(self.headless_surface)
+            _ = self._draw_score_labels(self.headless_surface, new_score)
+            _ = self._draw_snake(self.headless_surface, new_snake)
+            _ = self._draw_food(self.headless_surface, new_food)
+            if is_game_over:
+                _ = self._game_over_screen(self.headless_surface, board_rect=self.board_rect)
+        
+        # Convert surface to numpy array
+        rgb_array = pygame.surfarray.array3d(self.headless_surface)
+        rgb_array = np.transpose(rgb_array, (1, 0, 2))
+        
+        return rgb_array, (self.window_width, self.window_height)
+    
+    def close(self):
+        pygame.quit()

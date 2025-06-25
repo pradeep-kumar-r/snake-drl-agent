@@ -1,11 +1,8 @@
 from time import sleep
-from typing import Optional, Dict, Any
-import tkinter as tk
-import io
+from typing import Optional, Dict, Any, Tuple
 import gym
 from gym import spaces
 import numpy as np
-from PIL import Image
 from src.game.game import Game
 from src.game.ui import UI
 from src.config import ConfigManager
@@ -30,41 +27,36 @@ class SnakeEnv(gym.Env):
         
         self.headless: bool = not self.episodes_count % self.game_config["EPISODES_PER_RENDER"] == 0
         self.ui: Optional[UI] = None
-        self.root: Optional[tk.Tk] = None
-        self.off_screen_root: Optional[tk.Tk] = None
-        self.off_screen_ui: Optional[UI] = None
         
         # Action space: 0:STILL, 1:RIGHT, 2:DOWN, 3:LEFT, 4:UP
         self.action_space = spaces.Discrete(self.model_config["NUM_ACTIONS"])
         
-        self.image_size: int = self.model_config["IMAGE_INPUT_SIZE"]
+        self.image_dim: Tuple[int, int] = self.model_config["IMAGE_INPUT_SIZE"]
         
         # Observation space: RGB screenshot of the game
         self.observation_space = spaces.Box(
             low=0, 
             high=255, 
-            shape=(self.image_size, self.image_size, 3),
+            shape=(self.model_config["IMAGE_INPUT_SIZE"][0], 
+                   self.model_config["IMAGE_INPUT_SIZE"][1], 
+                   3),
             dtype=np.uint8
         )
 
     def _get_obs(self):
-        self.off_screen_root = tk.Tk()
-        self.off_screen_ui = UI(
-                master=self.off_screen_root,
+        # Headless rendering
+        if self.ui is None:
+            self.ui = UI(
                 ui_config=self.ui_config,
                 snake=self.game.snake,
-                food=self.game.current_food
+                episode=self.episodes_count,
+                food=self.game.current_food,
+                score=self.game.score,
+                high_score=self.game.high_score
             )
-        self.off_screen_ui.off_screen_render()
-        canvas = self.off_screen_ui.canvas
-        # canvas.update_idletasks()
-        ps_data = canvas.postscript(colormode='color')
-        img = Image.open(io.BytesIO(ps_data.encode('utf-8')))
-        img = img.resize((self.image_size, self.image_size), Image.Resampling.LANCZOS)
-        self.off_screen_root.destroy()
-        self.off_screen_root = None
-        self.off_screen_ui = None
-        return np.array(img.convert('RGB'))
+        
+        rgb_array, _ = self.ui.headless_render()
+        return rgb_array
 
     def _get_info(self):
         return self.game.get_state()
@@ -107,34 +99,10 @@ class SnakeEnv(gym.Env):
     def render(self):
         if self.episodes_count == 0 or self.episodes_count % self.game_config["EPISODES_PER_RENDER"] == 0:
             sleep(self.game_config["SLEEP_PER_TIMESTEP"])
-            self._display_ui()
-            if self.root:
-                self.root.update()
+            self.ui.full_render()
 
-    def close(self):
-        self._cleanup_ui()
-        
-    def _display_ui(self):
-        if not self.root:
-            self.root = tk.Tk()
-            self.root.title("Snake Game")
-            # Set window to be on top
-            self.root.attributes('-topmost', True)
-            self.root.deiconify()
-            self.ui = UI(
-                master=self.root,
-                ui_config=self.ui_config,
-                snake=self.game.snake,
-                food=self.game.current_food,
-                score=getattr(self.game, 'score', 0),
-                high_score=getattr(self.game, 'high_score', 0)
-            )
-        self.ui.full_render()
-        self.root.update()
-    
-    def _cleanup_ui(self):
-        if self.root:
-            self.root.destroy()
-            self.root = None
-        self.ui = None
+    def cleanup_ui(self):
+        if self.ui:
+            self.ui.close()
+            self.ui = None
         

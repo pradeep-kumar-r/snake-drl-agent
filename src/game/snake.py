@@ -64,3 +64,9 @@ class Snake:
     def kill(self) -> None:
         self.alive = False
         
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Snake):
+            return False
+        return all([self.body == other.body, 
+                    self.direction == other.direction])
+        
