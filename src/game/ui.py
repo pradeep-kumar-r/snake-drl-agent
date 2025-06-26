@@ -52,8 +52,8 @@ class UI:
             self.ui_config["SCORE"]["FONT"]["SIZE"]
         )
         self.font_game_over = pygame.font.SysFont(
-            self.ui_config["GAME_OVER"]["FONT"]["NAME"], 
-            self.ui_config["GAME_OVER"]["FONT"]["SIZE"]
+            self.ui_config["GAME_OVER_LABEL"]["FONT"]["NAME"], 
+            self.ui_config["GAME_OVER_LABEL"]["FONT"]["SIZE"]
         )
     
     def _initialize_display(self) -> None:
@@ -71,7 +71,7 @@ class UI:
         title_text = self.font_title.render(
             f"{self.ui_config['TITLE']['TEXT']}: Episode {self.episode}",
             True,
-            Colour(self.ui_config['TITLE']['COLOUR']).value,
+            Colour[self.ui_config['TITLE']['COLOUR']].value,
         )
         title_rect = title_text.get_rect(
             center=(self.window_width // 2, center_y)
@@ -89,7 +89,7 @@ class UI:
         score_text = self.font_score.render(
             f"Current Score: {self.score}\nHigh Score: {self.high_score}",
             True,
-            Colour(self.ui_config["SCORE"]["COLOUR"]).value,
+            Colour[self.ui_config["SCORE"]["COLOUR"]].value,
         )
         score_rect = score_text.get_rect(
             bottomcenter=(self.window_width // 4, bottom_y)
@@ -113,7 +113,7 @@ class UI:
         food_lifetime_text = self.font_score.render(
             f"Food Lifetime:\n{lifetime_text}",
             True,
-            Colour(self.ui_config["FOOD_LABEL"]["COLOUR"]).value
+            Colour[self.ui_config["FOOD_LABEL"]["COLOUR"]].value
         )
         food_lifetime_rect = food_lifetime_text.get_rect(
             bottomcenter=(self.window_width * 3 // 4, bottom_y)
@@ -127,7 +127,7 @@ class UI:
                     title_rect: Optional[pygame.Rect] = None,
                     score_rect: Optional[pygame.Rect] = None,
                     food_lifetime_rect: Optional[pygame.Rect] = None) -> pygame.Rect:
-        surface.fill(Colour('black').value)
+        surface.fill(Colour[self.ui_config['BOARD']['FILL']].value)
         pad = self.ui_config['BOARD']['PADDING']
         board_topleft_x, board_topleft_y = (pad, 
                                             title_rect.bottom + pad if title_rect else pad
@@ -139,7 +139,7 @@ class UI:
         # Draw bounding box
         board_rect = pygame.draw.rect(
             surface,
-            Colour('white').value,
+            Colour["WHITE"].value,
             (board_topleft_x, board_topleft_y, board_bottomright_x - board_topleft_x, board_bottomright_y - board_topleft_y),
             3
         )
@@ -149,7 +149,7 @@ class UI:
         for i in range(board_topleft_x + self.cell_size, board_bottomright_x + 1, self.cell_size):
             pygame.draw.line(
                 surface,
-                Colour('light_grey').value,
+                Colour['light_grey'].value,
                 (i, board_topleft_y),
                 (i, board_bottomright_y),
                 1
@@ -158,7 +158,7 @@ class UI:
         for i in range(board_topleft_y + self.cell_size, board_bottomright_y + 1, self.cell_size):
             pygame.draw.line(
                 surface,
-                Colour('light_grey').value,
+                Colour['light_grey'].value,
                 (board_topleft_x, i),
                 (board_bottomright_x, i),
                 1
@@ -180,7 +180,7 @@ class UI:
         head_right_x = board_rect.left + head_x * self.cell_size + self.cell_size + self.ui_config["SNAKE"]["HEAD"]["STRETCH"]
         head_polygon = pygame.draw.polygon(
             surface,
-            Colour(self.ui_config["SNAKE"]["HEAD"]["FILL"]).value,
+            Colour[self.ui_config["SNAKE"]["HEAD"]["FILL"]].value,
             [
                (head_left_x, head_top_y),
                (head_left_x, head_bottom_y),
@@ -197,7 +197,7 @@ class UI:
                                             board_rect.top + y1 * self.cell_size + self.cell_size // 2)
             body_circle = pygame.draw.circle(
                 surface,
-                Colour(self.ui_config["SNAKE"]["BODY"]["FILL"]).value,
+                Colour[self.ui_config["SNAKE"]["BODY"]["FILL"]].value,
                 (body_center_x, body_center_y),
                 body_radius
             )
@@ -215,11 +215,11 @@ class UI:
         food_center_x, food_center_y = (board_rect.left + food_x * self.cell_size + self.cell_size // 2, 
                                         board_rect.top + food_y * self.cell_size + self.cell_size // 2)
         is_super_food = isinstance(self.food, SuperFood)
-        fill_color = Colour(self.ui_config["FOOD"]["SUPER"]["FILL"]).value if is_super_food else Colour(self.ui_config["FOOD"]["SIMPLE"]["FILL"]).value
+        fill_color = Colour[self.ui_config["FOOD"]["SUPER"]["FILL"]].value if is_super_food else Colour[self.ui_config["FOOD"]["SIMPLE"]["FILL"]].value
         symbol = self.ui_config["FOOD"]["SUPER"]["SYMBOL"] if is_super_food else self.ui_config["FOOD"]["SIMPLE"]["SYMBOL"]
         font_name = self.ui_config["FOOD"]["SUPER"]["FONT"]["NAME"] if is_super_food else self.ui_config["FOOD"]["SIMPLE"]["FONT"]["NAME"]
         font_size = self.ui_config["FOOD"]["SUPER"]["FONT"]["SIZE"] if is_super_food else self.ui_config["FOOD"]["SIMPLE"]["FONT"]["SIZE"]
-        font_color = Colour(self.ui_config["FOOD"]["SUPER"]["FONT"]["COLOUR"]).value if is_super_food else Colour(self.ui_config["FOOD"]["SIMPLE"]["FONT"]["COLOUR"]).value
+        font_color = Colour[self.ui_config["FOOD"]["SUPER"]["FONT"]["COLOUR"]].value if is_super_food else Colour[self.ui_config["FOOD"]["SIMPLE"]["FONT"]["COLOUR"]].value
         
         pygame.draw.circle(
             surface,
@@ -245,13 +245,13 @@ class UI:
                           board_rect: pygame.Rect) -> pygame.Rect:
         overlay = pygame.Surface((self.window_width, self.window_height))
         overlay.set_alpha(180)
-        overlay.fill(Colour(self.ui_config["GAME_OVER_LABEL"]["FILL"]["COLOUR"]).value)
+        overlay.fill(Colour[self.ui_config["GAME_OVER_LABEL"]["FILL"]["COLOUR"]].value)
         surface.blit(overlay, (0, 0))
         
         game_over_text = self.font_game_over.render(
             f"{self.ui_config['GAME_OVER_LABEL']['TEXT']}\nFinal Score: {self.score}",
             True,
-            Colour(self.ui_config['GAME_OVER_LABEL']['FONT']['COLOUR']).value
+            Colour[self.ui_config['GAME_OVER_LABEL']['FONT']['COLOUR']].value
         )
         game_over_rect = game_over_text.get_rect(
             center=board_rect.center

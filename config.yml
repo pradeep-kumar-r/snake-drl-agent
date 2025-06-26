@@ -3,19 +3,19 @@ UI_CONFIG:
   EXTRA_WINDOW_HEIGHT: 100
   TITLE: 
     TEXT: "Snake Game"
-    COLOUR: white
+    COLOUR: WHITE
     TOP_PADDING: 20
     FONT: 
       NAME: "Arial"
       SIZE: 16
   SCORE:
-    COLOUR: white
+    COLOUR: WHITE
     BOTTOM_PADDING: 10
     FONT:
       NAME: "Arial"
       SIZE: 12
   FOOD_LABEL:
-    COLOUR: white
+    COLOUR: WHITE
     BOTTOM_PADDING: 10
     FONT:
       NAME: "Arial"
@@ -23,35 +23,35 @@ UI_CONFIG:
   FOOD:
     SIMPLE:
       SYMBOL: "O"
-      FILL: red
+      FILL: RED
       FONT:
         NAME: "Arial"
         SIZE: 8
-        COLOUR: white
+        COLOUR: WHITE
     SUPER:
       SYMBOL: "X"
-      FILL: purple
+      FILL: PURPLE
       FONT:
         NAME: "Arial"
         SIZE: 8
-        COLOUR: white
+        COLOUR: WHITE
   BOARD:
     PADDING: 10
-    FILL: black
+    FILL: BLACK
   SNAKE:
     HEAD:
-      FILL: green
+      FILL: GREEN
       STRETCH: 8
     BODY:
-      FILL: green
+      FILL: GREEN
   GAME_OVER_LABEL:
     TEXT: "GAME OVER"
-    FILL: white
+    FILL: WHITE
     FONT:
       NAME: "Arial"
       SIZE: 24
       STYLE: bold
-      COLOUR: red
+      COLOUR: RED
 
 GAME_CONFIG:
   SLEEP_PER_TIMESTEP: 0.2
