@@ -2,6 +2,8 @@
 Unit tests for the Snake class.
 """
 import unittest
+from unittest.mock import patch
+
 from src.game.snake import Snake
 from src.game.direction import Direction
 
@@ -59,12 +61,13 @@ class TestSnake(unittest.TestCase):
     
     def test_wrap_around(self):
         """Test snake wrapping around the board edges."""
+        boundary = self.board_dim // 2
         # Move to right edge
-        for _ in range(10):
+        for _ in range(boundary):
             self.snake.move()
         # Should wrap around to left edge
         self.snake.move()
-        self.assertEqual(self.snake.get_head()[0], -9)  # (10 - 20 + 1)
+        self.assertEqual(self.snake.get_head()[0], -boundary)
     
     def test_collision_detection(self):
         """Test collision detection with self."""
@@ -79,6 +82,33 @@ class TestSnake(unittest.TestCase):
         initial_head = self.snake.get_head()
         self.snake.move()  # Shouldn't move when dead
         self.assertEqual(self.snake.get_head(), initial_head)
+        
+    def test_equality(self):
+        """Test snake equality comparison."""
+        snake1 = Snake(
+            board_dim=self.board_dim,
+            init_pos=self.init_pos,
+            init_length=self.init_length,
+            init_direction=self.init_direction
+        )
+        
+        snake2 = Snake(
+            board_dim=self.board_dim,
+            init_pos=self.init_pos,
+            init_length=self.init_length,
+            init_direction=self.init_direction
+        )
+        
+        snake3 = Snake(
+            board_dim=self.board_dim,
+            init_pos=(1, 1),  # Different position
+            init_length=self.init_length,
+            init_direction=self.init_direction
+        )
+        
+        self.assertEqual(snake1, snake2)
+        self.assertNotEqual(snake1, snake3)
+        self.assertNotEqual(snake1, "not a snake object")
 
 if __name__ == '__main__':
     unittest.main()

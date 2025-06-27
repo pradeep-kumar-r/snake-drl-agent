@@ -70,9 +70,27 @@ class TestGame(unittest.TestCase):
     def test_step_movement(self):
         """Test snake movement in a step."""
         initial_head = self.game.snake.get_head()
+        # Step returns multiple values, but we don't need them for this test
         self.game.step(1)  # Move right
         new_head = self.game.snake.get_head()
         self.assertEqual(new_head, (initial_head[0] + 1, initial_head[1]))
+    
+    def test_step_return_values(self):
+        """Test the return values of the step method."""
+        # Reset game to ensure clean state
+        self.game.reset()
+        
+        # Take a step and check return values
+        reward, terminated, eaten_food, eaten_superfood, steps_elapsed, score, high_score, state = self.game.step(1)
+        
+        self.assertIsInstance(reward, int)
+        self.assertIsInstance(terminated, bool)
+        self.assertIsInstance(eaten_food, bool)
+        self.assertIsInstance(eaten_superfood, bool)
+        self.assertIsInstance(steps_elapsed, int)
+        self.assertIsInstance(score, int)
+        self.assertIsInstance(high_score, int)
+        self.assertIsInstance(state, dict)
     
     def test_food_eating(self):
         """Test food eating and score update."""
@@ -80,7 +98,7 @@ class TestGame(unittest.TestCase):
         food_pos = (3, 0)
         self.game.current_food = SimpleFood(board_dim=20)
         self.game.current_food.position = food_pos
-        self.game.is_food_active = True
+        self.game.current_food.active = True
         
         # Move snake to food
         for _ in range(3):
@@ -96,6 +114,15 @@ class TestGame(unittest.TestCase):
         self.game.snake.body = [(0, 0), (1, 0), (1, 1), (0, 1), (0, 0)]
         self.game.step(0)  # No movement, but will check collision
         self.assertTrue(self.game.is_game_over)
+        
+    def test_get_state(self):
+        """Test getting the game state."""
+        state = self.game.get_state()
+        self.assertIsInstance(state, dict)
+        self.assertIn('score', state)
+        self.assertIn('high_score', state)
+        self.assertIn('steps_elapsed', state)
+        self.assertIn('is_game_over', state)
 
 if __name__ == '__main__':
     unittest.main()
