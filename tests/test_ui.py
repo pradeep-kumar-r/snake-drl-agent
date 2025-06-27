@@ -31,7 +31,7 @@ class TestUI(unittest.TestCase):
             board_dim=self.game_config["BOARD_DIM"],
             init_pos=self.game_config["SNAKE"]["SNAKE_INIT_POS"],
             init_length=self.game_config["SNAKE"]["SNAKE_INIT_LENGTH"],
-            init_direction=self.game_config["SNAKE"]["SNAKE_INIT_DIRECTION"]
+            init_direction=Direction[self.game_config["SNAKE"]["SNAKE_INIT_DIRECTION"]]
         )
         
         # Create food for testing
@@ -69,9 +69,9 @@ class TestUI(unittest.TestCase):
         """Test updating UI components."""
         new_snake = Snake(
             board_dim=self.game_config["BOARD_DIM"],
-            init_pos=(1, 1),  # Different position
+            init_pos=(15, 10),  # Different position
             init_length=self.game_config["SNAKE"]["SNAKE_INIT_LENGTH"],
-            init_direction=self.game_config["SNAKE"]["SNAKE_INIT_DIRECTION"]
+            init_direction=Direction[self.game_config["SNAKE"]["SNAKE_INIT_DIRECTION"]]
         )
         
         new_food = SimpleFood(board_dim=self.game_config["BOARD_DIM"])

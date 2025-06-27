@@ -3,37 +3,37 @@ UI_CONFIG:
   EXTRA_WINDOW_HEIGHT: 100
   BG_COLOUR: BLACK
   TITLE: 
-    TEXT: "Snake Game"
+    TEXT: Snake Game
     COLOUR: WHITE
     TOP_PADDING: 20
     FONT: 
-      NAME: "Arial"
+      NAME: Arial
       SIZE: 16
   SCORE:
     COLOUR: WHITE
     BOTTOM_PADDING: 10
     FONT:
-      NAME: "Arial"
+      NAME: Arial
       SIZE: 12
   FOOD_LABEL:
     COLOUR: WHITE
     BOTTOM_PADDING: 10
     FONT:
-      NAME: "Arial"
+      NAME: Arial
       SIZE: 12
   FOOD:
     SIMPLE:
-      SYMBOL: "O"
+      SYMBOL: O
       FILL: RED
       FONT:
-        NAME: "Arial"
+        NAME: Arial
         SIZE: 8
         COLOUR: WHITE
     SUPER:
-      SYMBOL: "X"
+      SYMBOL: X
       FILL: PURPLE
       FONT:
-        NAME: "Arial"
+        NAME: Arial
         SIZE: 8
         COLOUR: WHITE
   BOARD:
@@ -52,28 +52,28 @@ UI_CONFIG:
     BODY:
       FILL: GREEN
   GAME_OVER_LABEL:
-    TEXT: "GAME OVER"
+    TEXT: GAME OVER
     FILL: WHITE
     FONT:
-      NAME: "Arial"
+      NAME: Arial
       SIZE: 24
       STYLE: bold
       COLOUR: RED
 
 GAME_CONFIG:
   SLEEP_PER_TIMESTEP: 0.2
-  BOARD_DIM: 11 # Must be an odd number
-  EPISODES_PER_RENDER: 2
+  BOARD_DIM: 20
+  EPISODES_PER_RENDER: 5
   FOOD:
     SUPERFOOD_PROBABILITY: 0.1
     SUPERFOOD_LIFETIME: 15
-  SNAKE:
+  SNAKE: # Recommended NOT to change
     SNAKE_INIT_LENGTH: 3 # Recommended to be between 3 and 5
     SNAKE_INIT_DIRECTION: RIGHT # Must be one of RIGHT, LEFT, UP or DOWN
-    SNAKE_INIT_POS: (0,0) # SAMPLE - AUTOCALCULATED & OVERWRITTEN LATER
+    SNAKE_INIT_POS: [10,10]
   SCORE:
-    EAT_FOOD: 10
-    XPLIER_EAT_SUPERFOOD: 10
+    EAT_FOOD: 10.0
+    XPLIER_EAT_SUPERFOOD: 10.0
     
 DATA_CONFIG:
   DATA_FOLDER_PATH: src/data
@@ -89,15 +89,15 @@ MODEL_CONFIG:
   NUM_ACTIONS: 5
   MODELS_FOLDER_PATH: src/models
   MODEL_NAME_PREFIX: snake_model_
-  IMAGE_INPUT_SIZE: (720, 1280) # SAMPLE - AUTOCALCULATED & OVERWRITTEN LATER
+  IMAGE_INPUT_SIZE: [720, 1280] # SAMPLE - AUTOCALCULATED & OVERWRITTEN LATER
   
 TRAINING_CONFIG:
   REWARDS:
-    EAT_FOOD: 10
-    XPLIER_EAT_SUPERFOOD: 10
-    COLLIDE: -100
+    EAT_FOOD: 10.0
+    XPLIER_EAT_SUPERFOOD: 10.0
+    COLLIDE: -100.0
     NOTHING: 0.1
-    MOVE: -1
+    MOVE: -1.0
   MAX_TRAINING_EPISODES: 10 # Change during actual PROD
   MAX_TIMESTEPS_PER_EPISODE: 100 # Change during actual PROD
   EPISODES_PER_CHECKPOINT: 100

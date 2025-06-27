@@ -28,7 +28,7 @@ class Game:
         self.snake = Snake(board_dim=self.game_config["BOARD_DIM"],
                            init_pos=self.game_config["SNAKE"]["SNAKE_INIT_POS"],
                            init_length=self.game_config["SNAKE"]["SNAKE_INIT_LENGTH"],
-                           init_direction=getattr(Direction, self.game_config["SNAKE"]["SNAKE_INIT_DIRECTION"]))
+                           init_direction=Direction[self.game_config["SNAKE"]["SNAKE_INIT_DIRECTION"]])
         self._generate_or_update_food()
         self.is_food_active: bool = False
         self.current_food: Optional[Food] = None
@@ -107,7 +107,7 @@ class Game:
         if self._is_food_eaten():
             self.food_count += 1
             self._update_score()
-            self.snake.should_grow = True
+            self.snake.growth_pending = True
                 
         # Step 4: Check for end states (collision or if the snake has eaten all foods)
         if self.snake.check_collision() or len(self.snake) >= self.game_config["BOARD_DIM"] ** 2:

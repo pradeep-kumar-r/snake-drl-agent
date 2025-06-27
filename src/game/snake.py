@@ -13,35 +13,37 @@ class Snake:
         self.init_pos = init_pos
         self.init_length = init_length
         self.direction = self.init_direction = init_direction
-        self.should_grow: bool = False
+        self.growth_pending: bool = False
         self.alive: bool = True
-        x, y = self.init_pos
-        self.body: List[Tuple[int, int]] = [(x - i, y) for i in range(self.init_length)]
+        self._set_body()
+    
+    def _set_body(self) -> None:
+        opposite_dir = Direction.get_opposite(self.init_direction)
+        dx, dy = opposite_dir.value
+        self.body: List[Tuple[int, int]] = [(self.init_pos[0] + dx * i, 
+                                             self.init_pos[1] + dy * i) for i in range(self.init_length)]
         
     def set_direction(self, new_direction: Direction) -> None:
-        # Check for 180 degree turns and modify direction
         if not Direction.is_opposite(self.direction, new_direction):
             self.direction = new_direction
 
     def move(self) -> None:
-        boundary = self.board_dim//2
-        left_bound_x = bottom_bound_y = -1*boundary
-        right_bound_x = top_bound_y = boundary
         if not self.alive:
             return
         head = self.body[0]
         new_head = add_tuples(head, self.direction.value)
-        if new_head[0] < left_bound_x:
-            new_head = (right_bound_x, new_head[1])
-        elif new_head[0] > right_bound_x:
-            new_head = (left_bound_x, new_head[1])
-        elif new_head[1] < bottom_bound_y:
-            new_head = (new_head[0], top_bound_y)
-        elif new_head[1] > top_bound_y:
-            new_head = (new_head[0], bottom_bound_y)
+        # Handle wrapping around the edges with pygame coordinates (0,0 at top-left)
+        if new_head[0] < 0:
+            new_head = (self.board_dim - 1, new_head[1])
+        elif new_head[0] >= self.board_dim:
+            new_head = (0, new_head[1])
+        elif new_head[1] < 0:
+            new_head = (new_head[0], self.board_dim - 1)
+        elif new_head[1] >= self.board_dim:
+            new_head = (new_head[0], 0)
         self.body.insert(0, new_head)
-        if self.should_grow:
-            self.should_grow = False
+        if self.growth_pending:
+            self.growth_pending = False
         else:
             self.body.pop()
 

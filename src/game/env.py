@@ -115,22 +115,21 @@ class SnakeEnv(gym.Env):
         return observation, reward, terminated, truncated, info
 
     def render(self) -> None:
-        if self.episodes_count > 0 and self.episodes_count % self.game_config["EPISODES_PER_RENDER"] != 0:
-            return
         if self.ui is None:
-            self.ui = UI(
-                ui_config=self.ui_config,
-                snake=self.game.snake,
-                episode=self.episodes_count,
-                food=self.game.current_food,
-                score=self.game.score,
-                high_score=self.game.high_score
-            )
+                self.ui = UI(
+                    ui_config=self.ui_config,
+                    snake=self.game.snake,
+                    episode=self.episodes_count,
+                    food=self.game.current_food,
+                    score=self.game.score,
+                    high_score=self.game.high_score
+                )
         else:
             self._update_ui_components()
                 
-        sleep(self.game_config["SLEEP_PER_TIMESTEP"])
-        self.ui.full_render()
+        if self.episodes_count % self.game_config["EPISODES_PER_RENDER"] == 0:
+            sleep(self.game_config["SLEEP_PER_TIMESTEP"])
+            self.ui.full_render()
 
     def cleanup_ui(self) -> None:
         if self.ui:

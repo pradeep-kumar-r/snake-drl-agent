@@ -13,7 +13,7 @@ class TestSnake(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.board_dim = 20
-        self.init_pos = (0, 0)
+        self.init_pos = (10, 10)
         self.init_length = 3
         self.init_direction = Direction.RIGHT
         self.snake = Snake(
@@ -30,6 +30,13 @@ class TestSnake(unittest.TestCase):
         self.assertEqual(self.snake.get_direction(), self.init_direction)
         self.assertTrue(self.snake.alive)
     
+    def test_body(self):
+        """Test snake body."""
+        self.assertEqual(len(self.snake.get_body()), self.init_length)
+        self.assertEqual(self.snake.get_body()[0], self.init_pos)
+        self.assertEqual(self.snake.get_body()[1], (self.init_pos[0] - 1, self.init_pos[1]))
+        self.assertEqual(self.snake.get_body()[2], (self.init_pos[0] - 2, self.init_pos[1]))
+    
     def test_movement(self):
         """Test snake movement."""
         initial_head = self.snake.get_head()
@@ -43,31 +50,32 @@ class TestSnake(unittest.TestCase):
         # Change direction to down
         self.snake.set_direction(Direction.DOWN)
         self.snake.move()
-        self.assertEqual(self.snake.get_head(), (0, 1))
+        self.assertEqual(self.snake.get_head(), (10, 11))
         
         # Try to move back up (should be ignored as it's opposite direction)
         self.snake.set_direction(Direction.UP)
         self.snake.move()
         # Should still move down
-        self.assertEqual(self.snake.get_head(), (0, 2))
+        self.assertEqual(self.snake.get_head(), (10, 12))
     
     def test_growth(self):
         """Test snake growth when eating food."""
         initial_length = len(self.snake)
-        self.snake.should_grow = True
+        self.snake.growth_pending = True
         self.snake.move()
         self.assertEqual(len(self.snake), initial_length + 1)
-        self.assertFalse(self.snake.should_grow)
+        self.assertFalse(self.snake.growth_pending)
     
     def test_wrap_around(self):
         """Test snake wrapping around the board edges."""
-        boundary = self.board_dim // 2
+        boundary = self.board_dim-1
+        self.snake.set_direction(Direction.RIGHT)
         # Move to right edge
-        for _ in range(boundary):
+        for _ in range(boundary-self.snake.get_head()[0]):
             self.snake.move()
         # Should wrap around to left edge
         self.snake.move()
-        self.assertEqual(self.snake.get_head()[0], -boundary)
+        self.assertEqual(self.snake.get_head()[0], 0)
     
     def test_collision_detection(self):
         """Test collision detection with self."""

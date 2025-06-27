@@ -81,16 +81,14 @@ class TestGame(unittest.TestCase):
         self.game.reset()
         
         # Take a step and check return values
-        reward, terminated, eaten_food, eaten_superfood, steps_elapsed, score, high_score, state = self.game.step(1)
+        steps_elapsed, terminated, score, snake_body, direction, is_food_active, food_pos, remaining_steps = self.game.step(1)
         
-        self.assertIsInstance(reward, int)
-        self.assertIsInstance(terminated, bool)
-        self.assertIsInstance(eaten_food, bool)
-        self.assertIsInstance(eaten_superfood, bool)
         self.assertIsInstance(steps_elapsed, int)
+        self.assertIsInstance(terminated, bool)
         self.assertIsInstance(score, int)
-        self.assertIsInstance(high_score, int)
-        self.assertIsInstance(state, dict)
+        self.assertIsInstance(snake_body, list)
+        self.assertIsInstance(direction, Direction)
+        self.assertIsInstance(is_food_active, bool)
     
     def test_food_eating(self):
         """Test food eating and score update."""

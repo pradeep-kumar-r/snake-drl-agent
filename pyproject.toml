@@ -82,7 +82,7 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --cov=src --cov-report=term-missing --cov-report=xml:coverage.xml --junitxml=junit/test-results.xml"
+addopts = "-v --cov=src --cov-report=term-missing --cov-report=xml:tests/coverage.xml --junitxml=tests/junit/test-results.xml"
 filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore::UserWarning"
@@ -104,5 +104,5 @@ fail_under = 80
 directory = "htmlcov"
 
 [tool.coverage.xml]
-output = "coverage.xml"
+output = "tests/coverage.xml"
 max-line-length = 88

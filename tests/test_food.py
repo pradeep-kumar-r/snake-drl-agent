@@ -74,9 +74,7 @@ class TestFood(unittest.TestCase):
         """Test placing super food on the board."""
         snake_body = [(0, 0), (1, 0), (1, 1)]
         self.super_food.place_food(snake_body)
-        # Note: In the current implementation, SuperFood.place_food sets active to False at the end
-        # This appears to be a bug in the implementation
-        self.assertFalse(self.super_food.active)
+        self.assertTrue(self.super_food.active)
         self.assertEqual(self.super_food.position, (5, 5))
         self.assertEqual(self.super_food.remaining_steps, 10)
     

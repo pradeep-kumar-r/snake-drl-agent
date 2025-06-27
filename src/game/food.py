@@ -29,7 +29,7 @@ class SimpleFood(Food):
         
     def place_food(self, snake_body: List[Tuple[int, int]]) -> None:
         while True:
-            pos = (random.randint(-1*self.board_dim//2, self.board_dim//2), random.randint(-1*self.board_dim//2, self.board_dim//2))
+            pos = (random.randint(0, self.board_dim-1), random.randint(0, self.board_dim-1))
             if pos not in snake_body:
                 self.position = pos
                 self.active = True
@@ -56,13 +56,12 @@ class SuperFood(Food):
 
     def place_food(self, snake_body: List[Tuple[int, int]]) -> None:
         while True:
-            pos = (random.randint(-1*self.board_dim//2, self.board_dim//2), random.randint(-1*self.board_dim//2, self.board_dim//2))
+            pos = (random.randint(0, self.board_dim-1), random.randint(0, self.board_dim-1))
             if pos not in snake_body:
                 self.position = pos
                 self.active = True
                 self.remaining_steps = self.lifetime
                 break
-        self.active = False
 
     def is_eaten(self, snake_head: Tuple[int, int]) -> bool:
         return self.active and snake_head == self.position

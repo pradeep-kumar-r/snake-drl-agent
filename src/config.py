@@ -24,12 +24,6 @@ class ConfigManager:
         cls.model_config = cls.config["MODEL_CONFIG"]
         cls.ui_config = cls.config["UI_CONFIG"]
         
-        # REMINDER - Needs to be updated at the end based on all configs added
-        b = cls.game_config["BOARD_DIM"] // 2
-        a = max(0, cls.game_config["SNAKE"]["SNAKE_INIT_LENGTH"] - b - 1)
-        d = getattr(Direction, cls.game_config["SNAKE"]["SNAKE_INIT_DIRECTION"]).value
-        cls.game_config["SNAKE"]["SNAKE_INIT_POS"] = np.dot(d, (a, b)), np.dot(d, (b, a))
-        
         cls.data_config["DATA_FOLDER_PATH"] = Path(cls.data_config["DATA_FOLDER_PATH"])
         cls.data_config["GAME_DATA_FOLDER"] = cls.data_config["DATA_FOLDER_PATH"].joinpath(cls.data_config["GAME_DATA_FOLDER_NAME"])
         cls.data_config["MODEL_DATA_FOLDER"] = cls.data_config["DATA_FOLDER_PATH"].joinpath(cls.data_config["MODEL_DATA_FOLDER_NAME"])
@@ -39,10 +33,13 @@ class ConfigManager:
         cls.logs_config["LOGS_FOLDER_PATH"] = Path(cls.logs_config["LOGS_FOLDER_PATH"])
         
         cls.model_config["MODELS_FOLDER_PATH"] = Path(cls.model_config["MODELS_FOLDER_PATH"])
-        cls.model_config["IMAGE_INPUT_SIZE"] = (cls.game_config["BOARD_DIM"] * cls.ui_config["CELL_SIZE_IN_PIXELS"],
-                                                cls.game_config["BOARD_DIM"] * cls.ui_config["CELL_SIZE_IN_PIXELS"] + cls.ui_config["EXTRA_WINDOW_HEIGHT"])
+        cls.model_config["IMAGE_INPUT_SIZE"] = (cls.game_config["BOARD_DIM"] * cls.ui_config["CELL_SIZE_IN_PIXELS"] + cls.ui_config["EXTRA_WINDOW_HEIGHT"],
+                                                cls.game_config["BOARD_DIM"] * cls.ui_config["CELL_SIZE_IN_PIXELS"])
         
         cls.ui_config["BOARD_DIM"] = cls.game_config["BOARD_DIM"]
+        
+        cls.game_config["SNAKE"]["SNAKE_INIT_POS"] = tuple(cls.game_config["SNAKE"]["SNAKE_INIT_POS"])
+        # cls.model_config["IMAGE_INPUT_SIZE"] = tuple(cls.model_config["IMAGE_INPUT_SIZE"])
     
     @classmethod
     def get_data_config(cls):
@@ -73,5 +70,7 @@ config = ConfigManager()
 
 # Testing configs
 if __name__ == "__main__":
-    print(config.get_training_config())
+    game_config = config.get_game_config()
+    print(game_config)
+    print(game_config["SNAKE"]["SNAKE_INIT_POS"])
     
