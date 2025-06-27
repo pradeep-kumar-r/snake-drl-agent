@@ -1,9 +1,6 @@
-#!/usr/bin/env python3
-
-from src.game.snake_env import SnakeEnv
-from src.agent.snake_agent import RandomSnakeAgent, DQNSnakeAgent
+from src.game.env import SnakeEnv
+from src.agent.agents import RandomSnakeAgent, DQNSnakeAgent
 from src.config import config as app_config
-from time import sleep
 
 
 def main():
@@ -28,7 +25,6 @@ def main():
             episode_reward += reward
             steps += 1
             env.render()
-            sleep(1)
             if terminated or truncated:
                 break
         total_rewards.append(episode_reward)

@@ -7,7 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from src.agent.dqn_model import ConvDQN
+from src.agent.models import ConvDQN
 from src.agent.replay_buffer import ReplayBuffer, Transition
 from src.config import ConfigManager
 
