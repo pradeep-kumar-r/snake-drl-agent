@@ -25,10 +25,10 @@ class ConfigManager:
         cls.ui_config = cls.config["UI_CONFIG"]
         
         cls.data_config["DATA_FOLDER_PATH"] = Path(cls.data_config["DATA_FOLDER_PATH"])
-        cls.data_config["GAME_DATA_FOLDER"] = cls.data_config["DATA_FOLDER_PATH"].joinpath(cls.data_config["GAME_DATA_FOLDER_NAME"])
-        cls.data_config["MODEL_DATA_FOLDER"] = cls.data_config["DATA_FOLDER_PATH"].joinpath(cls.data_config["MODEL_DATA_FOLDER_NAME"])
-        cls.data_config["SCORES_FILE_PATH"] = cls.data_config["GAME_DATA_FOLDER"].joinpath(cls.data_config["SCORES_FILE_NAME"])
-        cls.data_config["HIGH_SCORE_FILE_PATH"] = cls.data_config["GAME_DATA_FOLDER"].joinpath(cls.data_config["HIGH_SCORE_FILE_NAME"])
+        cls.data_config["GAME_DATA_FOLDER_PATH"] = Path(cls.data_config["GAME_DATA_FOLDER_PATH"])
+        cls.data_config["MODEL_DATA_FOLDER_PATH"] = Path(cls.data_config["MODEL_DATA_FOLDER_PATH"])
+        cls.data_config["SCORES_FILE_PATH"] = Path(cls.data_config["SCORES_FILE_PATH"])
+        cls.data_config["HIGH_SCORE_FILE_PATH"] = Path(cls.data_config["HIGH_SCORE_FILE_PATH"])
         
         cls.logs_config["LOGS_FOLDER_PATH"] = Path(cls.logs_config["LOGS_FOLDER_PATH"])
         
@@ -39,7 +39,9 @@ class ConfigManager:
         cls.ui_config["BOARD_DIM"] = cls.game_config["BOARD_DIM"]
         
         cls.game_config["SNAKE"]["SNAKE_INIT_POS"] = tuple(cls.game_config["SNAKE"]["SNAKE_INIT_POS"])
-        # cls.model_config["IMAGE_INPUT_SIZE"] = tuple(cls.model_config["IMAGE_INPUT_SIZE"])
+        
+        board_size_in_pix = cls.ui_config["BOARD_DIM"] * cls.ui_config["CELL_SIZE_IN_PIXELS"]
+        cls.model_config["IMAGE_INPUT_SIZE"] = (board_size_in_pix, board_size_in_pix)
     
     @classmethod
     def get_data_config(cls):

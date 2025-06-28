@@ -41,6 +41,8 @@ class Game:
         try:
             with open(self.data_config["HIGH_SCORE_FILE_PATH"], "r", encoding="utf-8") as f:
                 self.high_score = int(f.read())
+        except ValueError:
+            self.high_score = 0
         except FileNotFoundError:
             self.high_score = 0
         

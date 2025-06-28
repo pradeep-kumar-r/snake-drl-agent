@@ -1,8 +1,8 @@
 from typing import Dict, Any, Optional, Tuple, List
 import pygame
 import numpy as np
-from src.game.food import Food, SuperFood
 from src.game.snake import Snake
+from src.game.food import Food, SuperFood
 from src.game.colour import Colour
 
 
@@ -25,8 +25,17 @@ class UI:
         self.score: int = score
         self.high_score: int = high_score
         
-        self.window_width: int = self.board_width * self.cell_size
-        self.window_height: int = self.board_height * self.cell_size + self.ui_config["EXTRA_WINDOW_HEIGHT"]
+        # Calculate window dimensions to accommodate UI elements
+        self.extra_height = self.ui_config["EXTRA_WINDOW_HEIGHT"]
+        self.padding = self.ui_config['BOARD']['PADDING']
+        
+        # Calculate board dimensions
+        self.board_pixel_width = self.board_width * self.cell_size
+        self.board_pixel_height = self.board_height * self.cell_size
+        
+        # Calculate window dimensions
+        self.window_width = self.board_pixel_width + 2 * self.padding
+        self.window_height = self.board_pixel_height + self.extra_height
         
         self.screen: Optional[pygame.Surface] = None
         self.font_title: Optional[pygame.font.Font] = None
@@ -64,89 +73,175 @@ class UI:
         self._is_initialized = True
     
     def _draw_title(self, surface: pygame.Surface) -> Tuple[pygame.Surface, pygame.Rect]:
-        center_y = self.ui_config['TITLE']['TOP_PADDING']
+        # Create a title section with a border
+        title_height = self.ui_config['TITLE']['TOP_PADDING'] * 2
+        title_section = pygame.Rect(0, 0, self.window_width, title_height)
+        
+        # Draw title section background
+        pygame.draw.rect(
+            surface,
+            Colour[self.ui_config['BG_COLOUR']].value,
+            title_section
+        )
+        
+        # Draw border around title section
+        pygame.draw.rect(
+            surface,
+            Colour[self.ui_config['BOARD']['BORDER']['FILL']].value,
+            title_section,
+            self.ui_config['BOARD']['BORDER']['THICKNESS'] // 2
+        )
+        
+        # Render title text
         title_text = self.font_title.render(
             f"{self.ui_config['TITLE']['TEXT']}: Episode {self.episode}",
             True,
             Colour[self.ui_config['TITLE']['COLOUR']].value,
         )
+        
+        # Position title text in the center of the title section
         title_rect = title_text.get_rect(
-            center=(self.window_width // 2, center_y)
+            center=(self.window_width // 2, title_section.height // 2)
         )
+        
         surface.blit(title_text, title_rect)
-        return surface, title_rect
+        return surface, title_section
     
-    def _draw_score_labels(self, surface: pygame.Surface) -> Tuple[pygame.Surface, pygame.Rect]:
-        bottom_y = self.ui_config['SCORE']['BOTTOM_PADDING']
+    def __draw_scores_food_lifetime_labels(self, surface: pygame.Surface) -> Tuple[pygame.Surface, pygame.Rect]:
+        # Create a score section below the title
+        score_section = pygame.Rect(
+            0, 
+            self.ui_config['TITLE']['TOP_PADDING'] * 2, 
+            self.window_width, 
+            self.ui_config['SCORE']['SECTION_HEIGHT']
+        )
+        
+        # Draw score section background
+        pygame.draw.rect(
+            surface,
+            Colour[self.ui_config['BG_COLOUR']].value,
+            score_section
+        )
+        
+        # Draw border around score section
+        pygame.draw.rect(
+            surface,
+            Colour[self.ui_config['BOARD']['BORDER']['FILL']].value,
+            score_section,
+            self.ui_config['BOARD']['BORDER']['THICKNESS'] // 2
+        )
+        
+        # Render score and high score texts
         score_text = self.font_score.render(
-            f"Current Score: {self.score}\nHigh Score: {self.high_score}",
+            f"Current Score: {self.score}",
             True,
             Colour[self.ui_config["SCORE"]["COLOUR"]].value,
         )
-        score_rect = score_text.get_rect(
-            bottomleft=(0, bottom_y)
+        high_score_text = self.font_score.render(
+            f"High Score: {self.high_score}",
+            True,
+            Colour[self.ui_config["SCORE"]["COLOUR"]].value,
         )
-        surface.blit(score_text, score_rect)
-        return surface, score_rect
         
-    def _draw_food_lifetime_label(self, surface: pygame.Surface) -> Tuple[pygame.Surface, pygame.Rect]:
-        bottom_y = self.ui_config['SCORE']['BOTTOM_PADDING']
+        # Determine the food lifetime text
         lifetime_text = "-"
         if (self.food and 
             hasattr(self.food, 'remaining_steps') and 
             self.food.remaining_steps is not None):
-            lifetime_text = str(self.food.remaining_steps)
-        
+            lifetime_text = f"Food Lifetime: {self.food.remaining_steps}"
+        elif (self.food and 
+              isinstance(self.food, SuperFood)):
+            lifetime_text = "Super Food!"
+        else:
+            lifetime_text = "Food: Normal"
+            
+        # Render food lifetime text
         food_lifetime_text = self.font_score.render(
-            f"Food Lifetime:\n{lifetime_text}",
+            lifetime_text,
             True,
             Colour[self.ui_config["FOOD_LABEL"]["COLOUR"]].value
         )
-        food_lifetime_rect = food_lifetime_text.get_rect(
-            bottomright=(self.window_width, bottom_y)
+        
+        # Position score text on the left side of the score section
+        score_rect = score_text.get_rect(
+            center=(self.window_width // 6, score_section.centery)
         )
+        
+        # Position food lifetime text in the center of the score section
+        food_lifetime_rect = food_lifetime_text.get_rect(
+            center=(self.window_width // 2, score_section.centery)
+        )
+        
+        # Position high score text on the right side of the score section
+        high_score_rect = high_score_text.get_rect(
+            center=(self.window_width * 5 // 6, score_section.centery)
+        )
+        
+        # Render all texts to the surface
+        surface.blit(score_text, score_rect)
         surface.blit(food_lifetime_text, food_lifetime_rect)
-        return surface, food_lifetime_rect
+        surface.blit(high_score_text, high_score_rect)
+        
+        return surface, score_section
     
     def _draw_board(self, 
                     surface: pygame.Surface, 
-                    title_rect: pygame.Rect,
-                    score_rect: pygame.Rect,
-                    food_lifetime_rect: pygame.Rect) -> Tuple[pygame.Surface, pygame.Rect]:
-        surface.fill(Colour[self.ui_config['BOARD']['FILL']].value)
+                    score_rect: pygame.Rect) -> Tuple[pygame.Surface, pygame.Rect]:
+        # Calculate board position below the score section
         pad = self.ui_config['BOARD']['PADDING']
-        board_topleft_x, board_topleft_y = (pad, 
-                                            title_rect.bottom + pad
-        )
-        board_bottomright_x, board_bottomright_y = (self.window_width - pad, 
-                                                    min(score_rect.bottom, food_lifetime_rect.bottom) - pad
+        
+        # Board starts after the score section
+        board_topleft_x = pad
+        board_topleft_y = score_rect.bottom + pad
+        
+        # Board dimensions are fixed based on cell size and board dimensions
+        board_width = self.board_width * self.cell_size
+        board_height = self.board_height * self.cell_size
+        
+        board_bottomright_x = board_topleft_x + board_width
+        board_bottomright_y = board_topleft_y + board_height
+        
+        # Create board rectangle
+        board_rect = pygame.Rect(
+            board_topleft_x, 
+            board_topleft_y, 
+            board_width, 
+            board_height
         )
         
-        # Draw bounding box
-        board_rect = pygame.draw.rect(
+        # Draw board background
+        pygame.draw.rect(
+            surface,
+            Colour[self.ui_config['BOARD']['FILL']].value,
+            board_rect
+        )
+        
+        # Draw thick border around the board
+        pygame.draw.rect(
             surface,
             Colour[self.ui_config['BOARD']['BORDER']['FILL']].value,
-            (board_topleft_x, board_topleft_y, board_bottomright_x - board_topleft_x, board_bottomright_y - board_topleft_y),
+            board_rect,
             self.ui_config['BOARD']['BORDER']['THICKNESS']
         )
         
         # Draw grid lines
-        
-        for i in range(board_topleft_x + self.cell_size, board_bottomright_x + 1, self.cell_size):
+        for i in range(1, self.board_width):
+            x_pos = board_topleft_x + i * self.cell_size
             pygame.draw.line(
                 surface,
                 Colour[self.ui_config['BOARD']['GRID']['FILL']].value,
-                (i, board_topleft_y),
-                (i, board_bottomright_y),
+                (x_pos, board_topleft_y),
+                (x_pos, board_bottomright_y),
                 self.ui_config['BOARD']['GRID']['THICKNESS']
             )
         
-        for i in range(board_topleft_y + self.cell_size, board_bottomright_y + 1, self.cell_size):
+        for i in range(1, self.board_height):
+            y_pos = board_topleft_y + i * self.cell_size
             pygame.draw.line(
                 surface,
                 Colour[self.ui_config['BOARD']['GRID']['FILL']].value,
-                (board_topleft_x, i),
-                (board_bottomright_x, i),
+                (board_topleft_x, y_pos),
+                (board_bottomright_x, y_pos),
                 self.ui_config['BOARD']['GRID']['THICKNESS']
             )
         return surface, board_rect
@@ -157,34 +252,30 @@ class UI:
         snake_pygame_objects: List[pygame.Rect] = []
         # Draw head
         head_x, head_y = self.snake.body[0]
-        head_y1 = self.board_height - head_y
-        head_top_y = board_rect.top + head_y1 * self.cell_size - self.ui_config["SNAKE"]["HEAD"]["STRETCH"]
-        head_center_y = board_rect.top + head_y1 * self.cell_size + self.cell_size // 2
-        head_bottom_y = board_rect.top + head_y1 * self.cell_size + self.cell_size + self.ui_config["SNAKE"]["HEAD"]["STRETCH"]
+        head_y = self.board_height - head_y
+        head_top_y = board_rect.top + head_y * self.cell_size - self.ui_config["SNAKE"]["HEAD"]["STRETCH"]
+        head_bottom_y = board_rect.top + head_y * self.cell_size + self.cell_size + self.ui_config["SNAKE"]["HEAD"]["STRETCH"]
         head_left_x = board_rect.left + head_x * self.cell_size - self.ui_config["SNAKE"]["HEAD"]["STRETCH"]
         head_right_x = board_rect.left + head_x * self.cell_size + self.cell_size + self.ui_config["SNAKE"]["HEAD"]["STRETCH"]
-        head_polygon = pygame.draw.polygon(
+        
+        head_rect = pygame.draw.rect(
             surface,
             Colour[self.ui_config["SNAKE"]["HEAD"]["FILL"]].value,
-            [
-               (head_left_x, head_top_y),
-               (head_left_x, head_bottom_y),
-               (head_right_x, head_center_y)
-            ]
+            (head_left_x, head_top_y, head_right_x - head_left_x, head_bottom_y - head_top_y)
         )
-        snake_pygame_objects.append(head_polygon)
+        snake_pygame_objects.append(head_rect)
         
         # Draw body
-        body_radius = self.cell_size * 2 // 3
+        body_radius = self.cell_size // 2
         for x, y in self.snake.body[1:]:
-            y1 = self.board_height - y
+            y = self.board_height - y
             body_center_x, body_center_y = (board_rect.left + x * self.cell_size + self.cell_size // 2, 
-                                            board_rect.top + y1 * self.cell_size + self.cell_size // 2)
+                                            board_rect.top + y * self.cell_size + self.cell_size // 2)
             body_circle = pygame.draw.circle(
                 surface,
                 Colour[self.ui_config["SNAKE"]["BODY"]["FILL"]].value,
                 (body_center_x, body_center_y),
-                body_radius
+                body_radius + self.ui_config["SNAKE"]["BODY"]["STRETCH"]
             )
             snake_pygame_objects.append(body_circle)
         return surface, snake_pygame_objects
@@ -269,18 +360,13 @@ class UI:
     def full_render(self, is_game_over: bool = False) -> None:
         if not self._is_initialized:
             self._initialize_display()
-        else:
-            blank_surface = pygame.Surface((self.window_width, self.window_height))
-            blank_surface.fill(Colour[self.ui_config["BG_COLOUR"]].value)
-            self.screen.blit(blank_surface, (0, 0))
-     
+        
+        self.screen.fill(Colour[self.ui_config["BG_COLOUR"]].value)
         self.screen, self.title_rect = self._draw_title(self.screen)
-        self.screen, self.food_lifetime_rect = self._draw_food_lifetime_label(self.screen)
-        self.screen, self.score_rect = self._draw_score_labels(self.screen)
+        self.screen, self.score_rect = self.__draw_scores_food_lifetime_labels(self.screen)
         self.screen, self.board_rect = self._draw_board(self.screen, 
-                                                        title_rect=self.title_rect,
-                                                        score_rect=self.score_rect,
-                                                        food_lifetime_rect=self.food_lifetime_rect)
+                                                      score_rect=self.score_rect)
+        
         self.screen, self.snake_rect = self._draw_snake(self.screen, board_rect=self.board_rect)
         if self.food:
             self.screen, self.food_rect = self._draw_food(self.screen, board_rect=self.board_rect)
@@ -288,33 +374,34 @@ class UI:
             self.screen, self.game_over_rect = self._game_over_screen(self.screen, board_rect=self.board_rect)
         pygame.display.flip()
     
-    def headless_render(self, is_game_over: bool = False) -> Tuple[np.ndarray, Tuple[int, int]]:
+    def headless_render(self, is_game_over: bool = False) -> Tuple[np.ndarray, np.ndarray]:
         if not self._is_initialized:
             self._initialize_display()
-        else:
-            blank_surface = pygame.Surface((self.window_width, self.window_height))
-            blank_surface.fill(Colour[self.ui_config["BG_COLOUR"]].value)
-            self.headless_surface.blit(blank_surface, (0, 0))
-     
+        
+        self.headless_surface.fill(Colour[self.ui_config["BG_COLOUR"]].value)
         self.headless_surface, self.title_rect = self._draw_title(self.headless_surface)
-        self.headless_surface, self.food_lifetime_rect = self._draw_food_lifetime_label(self.headless_surface)
-        self.headless_surface, self.score_rect = self._draw_score_labels(self.headless_surface)
+        self.headless_surface, self.score_rect = self.__draw_scores_food_lifetime_labels(self.headless_surface)
         self.headless_surface, self.board_rect = self._draw_board(self.headless_surface, 
-                                                        title_rect=self.title_rect,
-                                                        score_rect=self.score_rect,
-                                                        food_lifetime_rect=self.food_lifetime_rect)
+                                                      score_rect=self.score_rect)
         self.headless_surface, self.snake_rect = self._draw_snake(self.headless_surface, board_rect=self.board_rect)
         if self.food:
             self.headless_surface, self.food_rect = self._draw_food(self.headless_surface, board_rect=self.board_rect)
+        
         if is_game_over:
             self.headless_surface, self.game_over_rect = self._game_over_screen(self.headless_surface, board_rect=self.board_rect)
         pygame.display.flip()
         
-        # Convert surface to numpy array
-        rgb_array = pygame.surfarray.array3d(self.headless_surface)
-        rgb_array = np.transpose(rgb_array, (1, 0, 2))
-        
-        return rgb_array, (self.window_width, self.window_height)
+        window_rgb_array = pygame.surfarray.array3d(self.headless_surface)
+        board_rgb_array = window_rgb_array[
+            self.board_rect.left:self.board_rect.right, 
+            self.board_rect.top:self.board_rect.bottom, 
+            : 
+        ]
+        print("window_rgb_array.shape: ", window_rgb_array.shape)
+        print("board_rgb_array.shape: ", board_rgb_array.shape)
+        window_rgb_array = np.transpose(window_rgb_array, (1, 0, 2))
+        board_rgb_array = np.transpose(board_rgb_array, (1, 0, 2))
+        return window_rgb_array, board_rgb_array
     
     def close(self):
         pygame.quit()

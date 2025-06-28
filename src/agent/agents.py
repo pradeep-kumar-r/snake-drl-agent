@@ -3,7 +3,9 @@ import os
 import math
 from abc import ABC, abstractmethod
 from typing import Optional
+from datetime import datetime
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -91,26 +93,39 @@ class DQNSnakeAgent(BaseSnakeAgent):
     def __init__(self, config: ConfigManager):
         super().__init__(config)
         
-        # Get configurations
         self.model_config = self.config.get_model_config()
         self.train_config = self.config.get_training_config()
+        self.data_config = self.config.get_data_config()
         
-        # Set device (GPU if available, else CPU)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(f"DQNSnakeAgent using device: {self.device}")
         
-        # Initialize policy and target networks
-        self.policy_net = ConvDQN(num_classes=self.action_space_n).to(self.device)
-        self.target_net = ConvDQN(num_classes=self.action_space_n).to(self.device)
-        self.target_net.load_state_dict(self.policy_net.state_dict())
-        self.target_net.eval()  # Target network is not trained directly
+        self.run_start_time = datetime.now().strftime("%Y%m%d_%H%M")
         
-        # Initialize optimizer
+        self.training_metrics = {
+            'losses': [],
+            'rewards': [],
+            'episode_lengths': [],
+            'epsilon_values': []
+        }
+        
+        image_height, image_width = self.model_config["IMAGE_INPUT_SIZE"]
+        input_shape = (3, image_height, image_width)
+        
+        self.policy_net = ConvDQN(num_classes=self.action_space_n, input_shape=input_shape).to(self.device)
+        self.target_net = ConvDQN(num_classes=self.action_space_n, input_shape=input_shape).to(self.device)
+        self.target_net.load_state_dict(self.policy_net.state_dict())
+        self.target_net.eval()
+        
         self.optimizer = optim.AdamW(
             self.policy_net.parameters(), 
             lr=self.model_config["LEARNING_RATE"], 
             amsgrad=True
         )
+        
+        self.metrics_dir = os.path.join(self.data_config["MODEL_DATA_FOLDER_PATH"], f"run_{self.run_start_time}")
+        if not os.path.exists(self.metrics_dir):
+            os.makedirs(self.metrics_dir)
         
         self.memory = ReplayBuffer(self.train_config["REPLAY_MEMORY_SIZE"])
         
@@ -187,10 +202,14 @@ class DQNSnakeAgent(BaseSnakeAgent):
         self.optimizer.zero_grad()
         loss.backward()
         
-        torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), 100)
+        torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), self.model_config["CLIP_GRADIENTS"])
         self.optimizer.step()
         
-        return loss.item()
+        loss_value = loss.item()
+        self.training_metrics['losses'].append(loss_value)
+        self.training_metrics['epsilon_values'].append(self.current_epsilon)
+        
+        return loss_value
     
     def update_target_network(self) -> None:
         self.target_net.load_state_dict(self.policy_net.state_dict())
@@ -203,8 +222,11 @@ class DQNSnakeAgent(BaseSnakeAgent):
     def save(self, path: str, episode: int) -> None:
         if not os.path.exists(path):
             os.makedirs(path)
+        
+        if not hasattr(self, 'run_start_time'):
+            self.run_start_time = datetime.now().strftime("%Y%m%d_%H%M")
             
-        model_path = os.path.join(path, f"{self.model_config['MODEL_NAME_PREFIX']}_episode_{episode}.pth")
+        model_path = os.path.join(path, f"{self.model_config['MODEL_NAME_PREFIX']}_{self.run_start_time}_episode_{episode}.pt")
         
         torch.save({
             'episode': episode,
@@ -212,10 +234,46 @@ class DQNSnakeAgent(BaseSnakeAgent):
             'target_net_state_dict': self.target_net.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
             'steps_done': self.steps_done,
-            'epsilon': self.current_epsilon
+            'epsilon': self.current_epsilon,
+            'training_metrics': getattr(self, 'training_metrics', {})
         }, model_path)
         
+        self.save_training_metrics(episode)
+        
         print(f"Model saved to {model_path}")
+        
+    def save_training_metrics(self, episode: int) -> None:
+        metrics_df = pd.DataFrame({
+            'episode': episode,
+            'loss': np.mean(self.training_metrics['losses'][-100:]) if self.training_metrics['losses'] else np.nan,
+            'reward': np.mean(self.training_metrics['rewards'][-10:]) if self.training_metrics['rewards'] else np.nan,
+            'episode_length': np.mean(self.training_metrics['episode_lengths'][-10:]) if self.training_metrics['episode_lengths'] else np.nan,
+            'epsilon': self.current_epsilon,
+            'timestamp': pd.Timestamp.now()
+        }, index=[0])
+        
+        metrics_path = os.path.join(self.metrics_dir, "metrics.csv")
+        
+        if os.path.exists(metrics_path):
+            existing_df = pd.read_csv(metrics_path)
+            updated_df = pd.concat([existing_df, metrics_df], ignore_index=True)
+            updated_df.to_csv(metrics_path, index=False)
+        else:
+            metrics_df.to_csv(metrics_path, index=False)
+            
+        detailed_metrics = {
+            'losses': np.array(self.training_metrics['losses']),
+            'rewards': np.array(self.training_metrics['rewards']),
+            'episode_lengths': np.array(self.training_metrics['episode_lengths']),
+            'epsilon_values': np.array(self.training_metrics['epsilon_values'])
+        }
+        
+        np.savez(
+            os.path.join(self.metrics_dir, f"detailed_metrics_episode_{episode}.npz"),
+            **detailed_metrics
+        )
+        
+        print(f"Training metrics saved to {self.metrics_dir}")
     
     def load(self, path: str) -> int:
         if os.path.exists(path):

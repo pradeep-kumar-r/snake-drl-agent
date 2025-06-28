@@ -9,3 +9,4 @@ class Colour(Enum):
     PURPLE = (128, 0, 128)
     BLUE = (0, 0, 255)
     LIGHT_GREY = (211, 211, 211)
+    TRANSPARENT_GREY = (200, 200, 200, 100)

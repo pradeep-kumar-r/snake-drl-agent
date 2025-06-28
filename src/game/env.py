@@ -64,8 +64,8 @@ class SnakeEnv(gym.Env):
         else:
             self._update_ui_components()
         
-        rgb_array, _ = self.ui.headless_render()
-        return rgb_array
+        _, board_rgb_array = self.ui.headless_render()
+        return board_rgb_array
 
     def _get_info(self) -> Dict[str, Any]:
         return self.game.get_state()
@@ -127,7 +127,7 @@ class SnakeEnv(gym.Env):
         else:
             self._update_ui_components()
                 
-        if self.episodes_count % self.game_config["EPISODES_PER_RENDER"] == 0:
+        if self.episodes_count == 1 or self.episodes_count % self.game_config["EPISODES_PER_RENDER"] == 0:
             sleep(self.game_config["SLEEP_PER_TIMESTEP"])
             self.ui.full_render()
 
