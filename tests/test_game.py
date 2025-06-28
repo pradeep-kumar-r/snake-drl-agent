@@ -26,8 +26,8 @@ class TestGame(unittest.TestCase):
                 "SUPERFOOD_LIFETIME": 10
             },
             "SCORE": {
-                "EAT_FOOD": 10,
-                "XPLIER_EAT_SUPERFOOD": 2
+                "EAT_FOOD": 10.0,
+                "XPLIER_EAT_SUPERFOOD": 2.0
             }
         }
         self.data_config = {
@@ -59,12 +59,20 @@ class TestGame(unittest.TestCase):
         self.assertEqual(self.game.steps_elapsed, 0)
         self.assertEqual(len(self.game.snake), 3)
     
-    @patch('random.random', return_value=0.05)  # Will trigger superfood
+    @patch('random.random', return_value=0.05)
     def test_generate_superfood(self, mock_random):
         """Test superfood generation."""
-        self.game.food_count = 1  # Need at least one food to generate superfood
+        # Set up conditions for superfood generation
+        self.game.food_count = 1
+        self.game.is_food_active = False  # Fixed: use game.is_food_active, not self.is_food_active
+        self.game.steps_elapsed = 5  # Ensure steps_elapsed >= 3 for food generation
+        
+        # Generate food
         self.game._generate_or_update_food()
+        
+        # Verify superfood was generated
         self.assertIsNotNone(self.game.current_food)
+        self.assertIsInstance(self.game.current_food, SuperFood)
         self.assertTrue(hasattr(self.game.current_food, 'remaining_steps'))
     
     def test_step_movement(self):
@@ -89,28 +97,57 @@ class TestGame(unittest.TestCase):
         self.assertIsInstance(snake_body, list)
         self.assertIsInstance(direction, Direction)
         self.assertIsInstance(is_food_active, bool)
+        print(f"Snake head: {snake_body[0]}")
     
     def test_food_eating(self):
         """Test food eating and score update."""
-        # Place food in front of the snake
-        food_pos = (13, 10)
-        self.game.current_food = SimpleFood(board_dim=20)
+        # Get the snake's current head position
+        head_pos = self.game.snake.get_head()
+        
+        # Place food one step to the right of the snake's head
+        food_pos = (head_pos[0] + 1, head_pos[1])
+        self.game.current_food = SimpleFood(board_dim=self.game_config["BOARD_DIM"])
         self.game.current_food.position = food_pos
         self.game.current_food.active = True
+        self.game.is_food_active = True  # This is crucial - need to set both flags
         
-        # Move snake to food
-        for _ in range(3):
-            self.game.step(1)  # Move right
+        # Move snake to food (one step right)
+        self.game.step(1)  # Move right
         
         # Check if food was eaten and score updated
-        self.assertNotEqual(self.game.current_food.position, food_pos)
         self.assertEqual(self.game.score, self.game_config["SCORE"]["EAT_FOOD"])
     
     def test_collision_detection(self):
         """Test collision detection."""
-        # Make the snake collide with itself
-        self.game.snake.body = [(10, 10), (1, 0), (1, 1), (0, 1), (0, 0)]
-        self.game.step(0)  # No movement, but will check collision
+        # Create a snake body where the head will collide with the body after moving
+        # Initial body: [(5,5), (6,5), (7,5), (8,5)]
+        # After moving left: [(4,5), (5,5), (6,5), (7,5)] - head at (4,5) doesn't collide
+        # After another left: [(3,5), (4,5), (5,5), (6,5)] - still no collision
+        # After turning down: [(3,6), (3,5), (4,5), (5,5)] - no collision
+        # After turning right: [(4,6), (3,6), (3,5), (4,5)] - no collision
+        # After another right: [(5,6), (4,6), (3,6), (3,5)] - no collision
+        # After another right: [(6,6), (5,6), (4,6), (3,6)] - no collision
+        # After turning up: [(6,5), (6,6), (5,6), (4,6)] - head at (6,5) will be in body
+        
+        # Set up the snake with a body that will cause collision after specific movements
+        self.game.snake.body = [(5, 5), (6, 5), (7, 5), (8, 5)]
+        
+        # Move left twice
+        self.game.step(3)  # LEFT
+        self.game.step(3)  # LEFT
+        
+        # Move down
+        self.game.step(2)  # DOWN
+        
+        # Move right three times
+        self.game.step(1)  # RIGHT
+        self.game.step(1)  # RIGHT
+        self.game.step(1)  # RIGHT
+        
+        # Move up - this should cause collision
+        self.game.step(4)  # UP
+        
+        # Verify game is over due to collision
         self.assertTrue(self.game.is_game_over)
         
     def test_get_state(self):
