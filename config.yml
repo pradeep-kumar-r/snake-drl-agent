@@ -1,64 +1,64 @@
 UI_CONFIG:
   CELL_SIZE_IN_PIXELS: 30
   EXTRA_WINDOW_HEIGHT: 100
-  BG_COLOUR: BLACK
+  BG_COLOUR: "BLACK"
   TITLE: 
-    TEXT: Snake Game
-    COLOUR: WHITE
+    TEXT: "Snake Game"
+    COLOUR: "WHITE"
     TOP_PADDING: 20
     FONT: 
       NAME: Arial
       SIZE: 16
   SCORE:
-    COLOUR: WHITE
+    COLOUR: "WHITE"
     BOTTOM_PADDING: 10
     FONT:
       NAME: Arial
       SIZE: 12
   FOOD_LABEL:
-    COLOUR: WHITE
+    COLOUR: "WHITE"
     BOTTOM_PADDING: 10
     FONT:
       NAME: Arial
       SIZE: 12
   FOOD:
     SIMPLE:
-      SYMBOL: O
-      FILL: RED
+      SYMBOL: "O"
+      FILL: "RED"
       FONT:
         NAME: Arial
         SIZE: 8
-        COLOUR: WHITE
+        COLOUR: "WHITE"
     SUPER:
-      SYMBOL: X
-      FILL: PURPLE
+      SYMBOL: "X"
+      FILL: "PURPLE"
       FONT:
         NAME: Arial
         SIZE: 8
-        COLOUR: WHITE
+        COLOUR: "WHITE"
   BOARD:
     PADDING: 10
-    FILL: BLACK
+    FILL: "BLACK"
     BORDER:
-      FILL: WHITE
+      FILL: "WHITE"
       THICKNESS: 3
     GRID:
-      FILL: LIGHT_GREY
+      FILL: "LIGHT_GREY"
       THICKNESS: 1
   SNAKE:
     HEAD:
-      FILL: GREEN
+      FILL: "GREEN"
       STRETCH: 8
     BODY:
-      FILL: GREEN
+      FILL: "GREEN"
   GAME_OVER_LABEL:
-    TEXT: GAME OVER
-    FILL: WHITE
+    TEXT: "GAME OVER"
+    FILL: "WHITE"
     FONT:
       NAME: Arial
       SIZE: 24
       STYLE: bold
-      COLOUR: RED
+      COLOUR: "RED"
 
 GAME_CONFIG:
   SLEEP_PER_TIMESTEP: 0.2
@@ -69,26 +69,26 @@ GAME_CONFIG:
     SUPERFOOD_LIFETIME: 15
   SNAKE: # Recommended NOT to change
     SNAKE_INIT_LENGTH: 3 # Recommended to be between 3 and 5
-    SNAKE_INIT_DIRECTION: RIGHT # Must be one of RIGHT, LEFT, UP or DOWN
+    SNAKE_INIT_DIRECTION: "RIGHT" # Must be one of RIGHT, LEFT, UP or DOWN
     SNAKE_INIT_POS: [10,10]
   SCORE:
     EAT_FOOD: 10.0
     XPLIER_EAT_SUPERFOOD: 10.0
     
 DATA_CONFIG:
-  DATA_FOLDER_PATH: src/data
-  GAME_DATA_FOLDER_NAME: gamedata
-  HIGH_SCORE_FILE_NAME: high_score.txt
-  SCORES_FILE_NAME: scores.txt
-  MODEL_DATA_FOLDER_NAME: modeldata
+  DATA_FOLDER_PATH: "src/data"
+  GAME_DATA_FOLDER_NAME: "gamedata"
+  HIGH_SCORE_FILE_NAME: "high_score.txt"
+  SCORES_FILE_NAME: "scores.txt"
+  MODEL_DATA_FOLDER_NAME: "modeldata"
 
 LOGS_CONFIG:
-  LOGS_FOLDER_PATH: logs
+  LOGS_FOLDER_PATH: "logs"
 
 MODEL_CONFIG:
   NUM_ACTIONS: 5
-  MODELS_FOLDER_PATH: src/models
-  MODEL_NAME_PREFIX: snake_model_
+  MODELS_FOLDER_PATH: "src/models"
+  MODEL_NAME_PREFIX: "snake_model_"
   IMAGE_INPUT_SIZE: [720, 1280] # SAMPLE - AUTOCALCULATED & OVERWRITTEN LATER
   
 TRAINING_CONFIG:

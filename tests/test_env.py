@@ -67,20 +67,19 @@ class TestSnakeEnv(unittest.TestCase):
         # The snake should have moved right
         self.assertEqual(self.env.game.snake.get_direction().name, 'RIGHT')
     
-    @patch('time.sleep')
-    def test_render(self, mock_sleep):
+    def test_render(self):
         """Test environment rendering."""
-        # Set episodes_count to a multiple of EPISODES_PER_RENDER
-        self.env.episodes_count = self.env.game_config["EPISODES_PER_RENDER"]
-        
-        # Reset to initialize the game and UI
-        self.env.reset()
-        
-        # Call render
-        self.env.render()
-        
-        # Verify sleep was called
-        mock_sleep.assert_called_once_with(self.env.game_config["SLEEP_PER_TIMESTEP"])
+        # Create a mock for the sleep function
+        with patch('src.game.env.sleep') as mock_sleep:
+            # Force the condition to be true by setting episodes_count
+            # to be divisible by EPISODES_PER_RENDER
+            self.env.episodes_count = self.env.game_config["EPISODES_PER_RENDER"]
+            
+            # Call render
+            self.env.render()
+            
+            # Verify sleep was called
+            mock_sleep.assert_called_once_with(self.env.game_config["SLEEP_PER_TIMESTEP"])
     
     def test_cleanup_ui(self):
         """Test environment cleanup."""

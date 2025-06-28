@@ -1,0 +1,4 @@
+{'game_id': UUID('b424080b-fb98-4689-81c8-446ebe520482'), 'updated_at': datetime.datetime(2025, 6, 28, 15, 19, 51, 420974), 'steps_elapsed': 1, 'food_count': 0, 'score': 0}
+{'game_id': UUID('3e5604aa-d219-42f6-8276-2dee56889b6f'), 'updated_at': datetime.datetime(2025, 6, 28, 15, 26, 20, 708020), 'steps_elapsed': 1, 'food_count': 0, 'score': 0}
+{'game_id': UUID('ee122169-703a-452d-b7d8-1f5513ac8655'), 'updated_at': datetime.datetime(2025, 6, 28, 15, 50, 6, 129157), 'steps_elapsed': 1, 'food_count': 0, 'score': 0}
+{'game_id': UUID('3a2512ad-3b3d-43e5-a565-3999663045ed'), 'updated_at': datetime.datetime(2025, 6, 28, 15, 51, 55, 374167), 'steps_elapsed': 1, 'food_count': 0, 'score': 0}

@@ -61,7 +61,7 @@ class Game:
             else:
                 self.current_food = SimpleFood(board_dim=self.game_config["BOARD_DIM"])
             self.current_food.place_food(self.snake.get_body())
-            self.is_food_active = True        
+            self.is_food_active = True
         else:
             self.current_food.update()
         
@@ -141,6 +141,7 @@ class Game:
             "steps_elapsed": self.steps_elapsed, 
             "food_count": self.food_count,
             "score": self.score,
+            "is_game_over": self.is_game_over,
         }
     
     def _record_score(self):

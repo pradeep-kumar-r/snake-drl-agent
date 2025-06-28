@@ -17,9 +17,9 @@ class TestGame(unittest.TestCase):
         self.game_config = {
             "BOARD_DIM": 20,
             "SNAKE": {
-                "SNAKE_INIT_POS": (0, 0),
+                "SNAKE_INIT_POS": (10, 10),
                 "SNAKE_INIT_LENGTH": 3,
-                "SNAKE_INIT_DIRECTION": Direction.RIGHT
+                "SNAKE_INIT_DIRECTION": "RIGHT"
             },
             "FOOD": {
                 "SUPERFOOD_PROBABILITY": 0.1,
@@ -93,7 +93,7 @@ class TestGame(unittest.TestCase):
     def test_food_eating(self):
         """Test food eating and score update."""
         # Place food in front of the snake
-        food_pos = (3, 0)
+        food_pos = (13, 10)
         self.game.current_food = SimpleFood(board_dim=20)
         self.game.current_food.position = food_pos
         self.game.current_food.active = True
@@ -109,7 +109,7 @@ class TestGame(unittest.TestCase):
     def test_collision_detection(self):
         """Test collision detection."""
         # Make the snake collide with itself
-        self.game.snake.body = [(0, 0), (1, 0), (1, 1), (0, 1), (0, 0)]
+        self.game.snake.body = [(10, 10), (1, 0), (1, 1), (0, 1), (0, 0)]
         self.game.step(0)  # No movement, but will check collision
         self.assertTrue(self.game.is_game_over)
         
@@ -117,9 +117,11 @@ class TestGame(unittest.TestCase):
         """Test getting the game state."""
         state = self.game.get_state()
         self.assertIsInstance(state, dict)
-        self.assertIn('score', state)
-        self.assertIn('high_score', state)
+        self.assertIn('game_id', state)
+        self.assertIn('updated_at', state)
         self.assertIn('steps_elapsed', state)
+        self.assertIn('food_count', state)
+        self.assertIn('score', state)
         self.assertIn('is_game_over', state)
 
 if __name__ == '__main__':
