@@ -119,7 +119,7 @@ class DQNSnakeAgent(BaseSnakeAgent):
         
         self.optimizer = optim.AdamW(
             self.policy_net.parameters(), 
-            lr=self.model_config["LEARNING_RATE"], 
+            lr=self.train_config["LEARNING_RATE"], 
             amsgrad=True
         )
         
@@ -202,7 +202,7 @@ class DQNSnakeAgent(BaseSnakeAgent):
         self.optimizer.zero_grad()
         loss.backward()
         
-        torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), self.model_config["CLIP_GRADIENTS"])
+        torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), self.train_config["CLIP_GRADIENTS"])
         self.optimizer.step()
         
         loss_value = loss.item()
