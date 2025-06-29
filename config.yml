@@ -63,7 +63,7 @@ UI_CONFIG:
       COLOUR: "RED"
 
 GAME_CONFIG:
-  SLEEP_PER_TIMESTEP: 0.2
+  SLEEP_PER_TIMESTEP: 0.1
   BOARD_DIM: 20
   EPISODES_PER_RENDER: 5
   FOOD:
@@ -81,8 +81,8 @@ DATA_CONFIG:
   DATA_FOLDER_PATH: "src/data"
   MODEL_DATA_FOLDER_PATH: "src/data/modeldata"
   GAME_DATA_FOLDER_PATH: "src/data/gamedata"
-  HIGH_SCORE_FILE_PATH: "src/data/high_score.txt"
   SCORES_FILE_PATH: "src/data/scores.txt"
+  HIGH_SCORE_FILE_PATH: "src/data/high_score.txt"
 
 LOGS_CONFIG:
   LOGS_FOLDER_PATH: "logs"
