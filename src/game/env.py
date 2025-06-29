@@ -6,6 +6,7 @@ import numpy as np
 from src.game.game import Game
 from src.game.ui import UI
 from src.config import ConfigManager
+from src.utils.logger import logger
 
 
 class SnakeEnv(gym.Env):
@@ -19,6 +20,8 @@ class SnakeEnv(gym.Env):
         self.ui_config = app_config.get_ui_config()
         self.model_config = app_config.get_model_config()
         self.training_config = app_config.get_training_config()
+        
+        logger.info("Initializing SnakeEnv with config settings")
 
         self.game = Game(game_config=self.game_config,
                          data_config=self.data_config)
@@ -76,6 +79,7 @@ class SnakeEnv(gym.Env):
         super().reset(seed=seed)
         self.episodes_count += 1
         self.game.reset()
+        logger.debug(f"Environment reset for episode {self.episodes_count}")
         # self.game = Game(game_config=self.game_config,
         #                  data_config=self.data_config)
         observation = self._get_obs()
@@ -94,6 +98,7 @@ class SnakeEnv(gym.Env):
     def step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
         prev_score = self.game.score
         
+        logger.debug(f"Taking action {action}")
         _, terminated, _, _, _, _, _, _ = self.game.step(action)
 
         # Update rewards accumulated
@@ -101,13 +106,17 @@ class SnakeEnv(gym.Env):
         if action == 0:
             reward += self.training_config["REWARDS"]["NOTHING"]
             
-        if terminated:
+        if self.game.snake.check_collision():
             reward += self.training_config["REWARDS"]["COLLIDE"]
+            logger.debug(f"Snake collided, adding collision reward: {self.training_config['REWARDS']['COLLIDE']}")
         else:
             reward += self.training_config["REWARDS"]["MOVE"]
+            logger.debug(f"Snake moved, adding movement reward: {self.training_config['REWARDS']['MOVE']}")
             
         if self.game.score > prev_score:
-            reward += self.game.score - prev_score
+            food_reward = self.game.score - prev_score
+            reward += food_reward
+            logger.debug(f"Snake ate food, adding food reward: {food_reward}")
         
         observation = self._get_obs()
         info = self._get_info()
@@ -133,6 +142,7 @@ class SnakeEnv(gym.Env):
 
     def cleanup_ui(self) -> None:
         if self.ui:
+            logger.debug("Cleaning up UI resources")
             self.ui.close()
             self.ui = None
         

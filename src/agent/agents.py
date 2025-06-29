@@ -1,6 +1,5 @@
 import random
 import os
-import math
 from abc import ABC, abstractmethod
 from typing import Optional
 from datetime import datetime
@@ -12,6 +11,7 @@ import torch.optim as optim
 from src.agent.models import ConvDQN
 from src.agent.replay_buffer import ReplayBuffer, Transition
 from src.config import ConfigManager
+from src.utils.logger import logger
 
 
 class BaseSnakeAgent(ABC):
@@ -98,7 +98,7 @@ class DQNSnakeAgent(BaseSnakeAgent):
         self.data_config = self.config.get_data_config()
         
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print(f"DQNSnakeAgent using device: {self.device}")
+        logger.info(f"DQNSnakeAgent using device: {self.device}")
         
         self.run_start_time = datetime.now().strftime("%Y%m%d_%H%M")
         
@@ -140,17 +140,35 @@ class DQNSnakeAgent(BaseSnakeAgent):
         self.current_epsilon = self.epsilon_start
     
     def select_action(self, state: np.ndarray) -> int:
-        self.current_epsilon = self.epsilon_end + (self.epsilon_start - self.epsilon_end) * \
-                              math.exp(-1. * self.steps_done / self.epsilon_decay)
+        if self.steps_done <= 1:
+            self.current_epsilon = self.epsilon_start
+        else:
+            self.current_epsilon *= self.epsilon_decay 
+            self.current_epsilon = max(self.epsilon_end, self.current_epsilon)
         
         self.steps_done += 1
+        
+        logger.debug(f"State shape: {state.shape}, Epsilon: {self.current_epsilon:.4f}, Steps: {self.steps_done}")
+        
         if random.random() > self.current_epsilon:
-            with torch.no_grad():
-                state_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
-                q_values = self.policy_net(state_tensor)
-                return q_values.max(1)[1].item()
+            try:
+                with torch.no_grad():
+                    state_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
+                    logger.debug(f"Input tensor shape: {state_tensor.shape}")
+                    q_values = self.policy_net(state_tensor)
+                    logger.debug(f"Q-values: {q_values}")
+                    action = q_values.max(1)[1].item()
+                    logger.debug(f"Selected action (exploit): {action}")
+                    return action
+            except Exception as e:
+                logger.error(f"Error in action selection: {e}")
+                action = random.randrange(self.action_space_n)
+                logger.warning(f"Fallback random action: {action}")
+                return action
         else:
-            return random.randrange(self.action_space_n)
+            action = random.randrange(self.action_space_n)
+            logger.debug(f"Selected action (explore): {action}")
+            return action
     
     def on_step(self, 
                 state: np.ndarray, 
@@ -217,7 +235,7 @@ class DQNSnakeAgent(BaseSnakeAgent):
     def on_episode_end(self, episode: int) -> None:
         if episode % self.target_update_frequency == 0:
             self.update_target_network()
-            print(f"Target network updated at episode {episode}")
+            logger.info(f"Target network updated at episode {episode}")
     
     def save(self, path: str, episode: int) -> None:
         if not os.path.exists(path):
@@ -240,7 +258,7 @@ class DQNSnakeAgent(BaseSnakeAgent):
         
         self.save_training_metrics(episode)
         
-        print(f"Model saved to {model_path}")
+        logger.info(f"Model saved to {model_path}")
         
     def save_training_metrics(self, episode: int) -> None:
         metrics_df = pd.DataFrame({
@@ -273,7 +291,7 @@ class DQNSnakeAgent(BaseSnakeAgent):
             **detailed_metrics
         )
         
-        print(f"Training metrics saved to {self.metrics_dir}")
+        logger.info(f"Training metrics saved to {self.metrics_dir}")
     
     def load(self, path: str) -> int:
         if os.path.exists(path):
@@ -290,8 +308,8 @@ class DQNSnakeAgent(BaseSnakeAgent):
             self.target_net.eval()
             
             episode = checkpoint.get('episode', 0)
-            print(f"Model loaded from {path} (episode {episode})")
+            logger.info(f"Model loaded from {path} (episode {episode})")
             return episode
         else:
-            print(f"No model found at {path}, starting from scratch.")
+            logger.warning(f"No model found at {path}, starting from scratch.")
             return 0

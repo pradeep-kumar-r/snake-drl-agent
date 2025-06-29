@@ -4,6 +4,7 @@ import numpy as np
 from src.game.snake import Snake
 from src.game.food import Food, SuperFood
 from src.game.colour import Colour
+from src.utils.logger import logger
 
 
 class UI:
@@ -14,6 +15,7 @@ class UI:
                  food: Optional[Food] = None,
                  score: Optional[int] = 0,
                  high_score: Optional[int] = 0):
+        logger.debug(f"Initializing UI for episode {episode}")
         pygame.init()
         self.ui_config = ui_config
         self.board_width: int = self.ui_config["BOARD_DIM"]
@@ -71,6 +73,7 @@ class UI:
         self._initialize_fonts()
         self.headless_surface = pygame.Surface((self.window_width, self.window_height))
         self._is_initialized = True
+        logger.debug(f"Display initialized with dimensions: {self.window_width}x{self.window_height}")
     
     def _draw_title(self, surface: pygame.Surface) -> Tuple[pygame.Surface, pygame.Rect]:
         # Create a title section with a border
@@ -352,10 +355,13 @@ class UI:
                           ) -> None:
         if new_score:
             self._update_score(new_score)
+            logger.debug(f"Updated score to {new_score}")
         if new_snake:
             self._update_snake(new_snake)
+            logger.debug("Updated snake position")
         if new_food:
             self._update_food(new_food)
+            logger.debug(f"Updated food position to {new_food.position}")
             
     def full_render(self, is_game_over: bool = False) -> None:
         if not self._is_initialized:
@@ -397,11 +403,10 @@ class UI:
             self.board_rect.top:self.board_rect.bottom, 
             : 
         ]
-        print("window_rgb_array.shape: ", window_rgb_array.shape)
-        print("board_rgb_array.shape: ", board_rgb_array.shape)
-        window_rgb_array = np.transpose(window_rgb_array, (1, 0, 2))
-        board_rgb_array = np.transpose(board_rgb_array, (1, 0, 2))
+        window_rgb_array = np.transpose(window_rgb_array, (2, 1, 0))
+        board_rgb_array = np.transpose(board_rgb_array, (2, 1, 0))
         return window_rgb_array, board_rgb_array
     
     def close(self):
+        logger.debug("Closing pygame UI resources")
         pygame.quit()

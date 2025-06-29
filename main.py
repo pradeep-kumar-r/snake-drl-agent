@@ -1,6 +1,7 @@
 from src.game.env import SnakeEnv
 from src.agent.agents import RandomSnakeAgent, DQNSnakeAgent
 from src.config import config as app_config
+from src.utils.logger import logger
 
 
 def main():
@@ -15,13 +16,13 @@ def main():
     total_rewards = []
     episode_lengths = []
     
-    print(f"Starting Snake game with DQN Agent for {max_episodes} episodes")
+    logger.info(f"Starting Snake game with DQN Agent for {max_episodes} episodes")
     for episode in range(1, max_episodes + 1):
         obs, info = env.reset()
         episode_reward = 0
         steps = 0
-        print(f"\nEpisode {episode}/{max_episodes}")
-        print(f"Initial state: {info}")
+        logger.info(f"Episode {episode}/{max_episodes}")
+        logger.debug(f"Initial state: {info}")
         
         for step in range(1, max_steps_per_episode + 1):
             action = agent.select_action(obs)
@@ -31,7 +32,7 @@ def main():
             
             loss = agent.optimize_model()
             if loss is not None and step % training_config["PRINT_LOSS_EVERY"] == 0:
-                print(f"Step {step}, Loss: {loss:.4f}, Epsilon: {agent.current_epsilon:.4f}")
+                logger.info(f"Step {step}, Loss: {loss:.4f}, Epsilon: {agent.current_epsilon:.4f}")
                 
             env.render()
             if terminated or truncated:
@@ -43,20 +44,20 @@ def main():
         agent.training_metrics['rewards'].append(episode_reward)
         agent.training_metrics['episode_lengths'].append(steps)
         
-        print(f"Episode {episode} finished after {steps} steps")
-        print(f"Total reward: {episode_reward}")
-        print(f"Final state: {info}")
+        logger.info(f"Episode {episode} finished after {steps} steps")
+        logger.info(f"Total reward: {episode_reward}")
+        logger.debug(f"Final state: {info}")
         
         if episode % episodes_per_checkpoint == 0:
-            print(f"Saving checkpoint at episode {episode}")
+            logger.info(f"Saving checkpoint at episode {episode}")
             agent.save(model_config["MODELS_FOLDER_PATH"], episode)
     
-    print("\n===== Game Summary =====")
-    print(f"Episodes played: {max_episodes}")
-    print(f"Average reward: {sum(total_rewards) / len(total_rewards):.2f}")
-    print(f"Average episode length: {sum(episode_lengths) / len(episode_lengths):.2f}")
-    print(f"Max reward: {max(total_rewards):.2f}")
-    print(f"Max episode length: {max(episode_lengths)}")
+    logger.info("===== Game Summary =====")
+    logger.info(f"Episodes played: {max_episodes}")
+    logger.info(f"Average reward: {sum(total_rewards) / len(total_rewards):.2f}")
+    logger.info(f"Average episode length: {sum(episode_lengths) / len(episode_lengths):.2f}")
+    logger.info(f"Max reward: {max(total_rewards):.2f}")
+    logger.info(f"Max episode length: {max(episode_lengths)}")
     env.close()
 
 
