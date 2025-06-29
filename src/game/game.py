@@ -128,7 +128,7 @@ class Game:
         
     def _record_state(self):
         self.state = {
-            "game_id": uuid4(),
+            "game_id": str(uuid4()),
             "updated_at": datetime.now(),
             "steps_elapsed": self.steps_elapsed, 
             "food_count": self.food_count,
@@ -138,8 +138,8 @@ class Game:
     
     def get_state(self):
         return {
-            "game_id": uuid4(),
-            "updated_at": datetime.now(),
+            "game_id": str(uuid4()),
+            "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "steps_elapsed": self.steps_elapsed, 
             "food_count": self.food_count,
             "score": self.score,
