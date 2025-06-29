@@ -45,9 +45,9 @@ class TestSnakeEnv(unittest.TestCase):
         
         # Verify the observation is a numpy array with correct shape
         self.assertIsInstance(obs, np.ndarray)
-        self.assertEqual(obs.shape, (self.env.model_config["IMAGE_INPUT_SIZE"][0], 
-                                    self.env.model_config["IMAGE_INPUT_SIZE"][1], 
-                                    3))
+        self.assertEqual(obs.shape, (3,
+                                     self.env.model_config["IMAGE_INPUT_SIZE"][1], 
+                                     self.env.model_config["IMAGE_INPUT_SIZE"][0]))
     
     def test_step(self):
         """Test taking a step in the environment."""

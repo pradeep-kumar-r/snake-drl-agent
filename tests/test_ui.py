@@ -92,12 +92,12 @@ class TestUI(unittest.TestCase):
     
     def test_headless_render(self):
         """Test headless rendering."""
-        rgb_array, dimensions = self.ui.headless_render()
+        window_rgb_array, board_rgb_array = self.ui.headless_render()
         
-        self.assertIsInstance(rgb_array, np.ndarray)
-        self.assertEqual(len(dimensions), 2)
-        self.assertEqual(dimensions[0], self.ui.window_width)
-        self.assertEqual(dimensions[1], self.ui.window_height)
+        self.assertIsInstance(window_rgb_array, np.ndarray)
+        self.assertIsInstance(board_rgb_array, np.ndarray)
+        self.assertEqual(window_rgb_array.shape, (3, self.ui.window_height, self.ui.window_width))
+        self.assertEqual(board_rgb_array.shape, (3, self.ui.board_pixel_height, self.ui.board_pixel_width))
     
     @patch('pygame.display.flip')
     def test_full_render(self, mock_flip):
