@@ -289,7 +289,7 @@ class UI:
         if not self.food:
             return
         food_x, food_y = self.food.position
-        food_y = self.board_height - food_y
+        food_y = (self.board_height - 1) - food_y 
         food_center_x, food_center_y = (board_rect.left + food_x * self.cell_size + self.cell_size // 2, 
                                         board_rect.top + food_y * self.cell_size + self.cell_size // 2)
         is_super_food = isinstance(self.food, SuperFood)
