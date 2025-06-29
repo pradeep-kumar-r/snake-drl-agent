@@ -255,7 +255,7 @@ class UI:
         snake_pygame_objects: List[pygame.Rect] = []
         # Draw head
         head_x, head_y = self.snake.body[0]
-        head_y = self.board_height - head_y
+        head_y = (self.board_height - 1) - head_y
         head_top_y = board_rect.top + head_y * self.cell_size - self.ui_config["SNAKE"]["HEAD"]["STRETCH"]
         head_bottom_y = board_rect.top + head_y * self.cell_size + self.cell_size + self.ui_config["SNAKE"]["HEAD"]["STRETCH"]
         head_left_x = board_rect.left + head_x * self.cell_size - self.ui_config["SNAKE"]["HEAD"]["STRETCH"]
@@ -271,7 +271,7 @@ class UI:
         # Draw body
         body_radius = self.cell_size // 2
         for x, y in self.snake.body[1:]:
-            y = self.board_height - y
+            y = (self.board_height - 1) - y
             body_center_x, body_center_y = (board_rect.left + x * self.cell_size + self.cell_size // 2, 
                                             board_rect.top + y * self.cell_size + self.cell_size // 2)
             body_circle = pygame.draw.circle(

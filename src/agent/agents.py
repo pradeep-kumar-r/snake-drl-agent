@@ -139,11 +139,11 @@ class DQNSnakeAgent(BaseSnakeAgent):
         self.steps_done = 0
         self.current_epsilon = self.epsilon_start
     
-    def select_action(self, state: np.ndarray) -> int:
-        if self.steps_done <= 1:
+    def select_action(self, state: np.ndarray, episode: int) -> int:
+        if episode <= 1:
             self.current_epsilon = self.epsilon_start
         else:
-            self.current_epsilon *= self.epsilon_decay 
+            self.current_epsilon = self.current_epsilon * (self.epsilon_decay ** (episode - 1))
             self.current_epsilon = max(self.epsilon_end, self.current_epsilon)
         
         self.steps_done += 1

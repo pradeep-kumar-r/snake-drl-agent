@@ -2,6 +2,7 @@ import random
 from uuid import uuid4
 from datetime import datetime
 from typing import Optional, Literal, Tuple, Dict, Any
+from pathlib import Path
 from src.game.direction import Direction
 from src.game.snake import Snake
 from src.game.food import Food, SimpleFood, SuperFood
@@ -41,9 +42,7 @@ class Game:
         try:
             with open(self.data_config["HIGH_SCORE_FILE_PATH"], "r", encoding="utf-8") as f:
                 self.high_score = int(f.read())
-        except ValueError:
-            self.high_score = 0
-        except FileNotFoundError:
+        except (ValueError, FileNotFoundError):
             self.high_score = 0
         
     def _is_food_eaten(self) -> bool:
@@ -110,6 +109,8 @@ class Game:
             self.food_count += 1
             self._update_score()
             self.snake.growth_pending = True
+            self.current_food.active = False
+            self.is_food_active = False
                 
         # Step 4: Check for end states (collision or if the snake has eaten all foods)
         if self.snake.check_collision() or len(self.snake) >= self.game_config["BOARD_DIM"] ** 2:
@@ -147,9 +148,15 @@ class Game:
         }
     
     def _record_score(self):
-        with open(self.data_config["SCORES_FILE_PATH"], "a", encoding="utf-8") as f:
+        scores_path = Path(self.data_config["SCORES_FILE_PATH"])
+        scores_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(scores_path, "a", encoding="utf-8") as f:
             f.write(f"{self.state}\n")
         
+        high_score_path = Path(self.data_config["HIGH_SCORE_FILE_PATH"])
+        high_score_path.parent.mkdir(parents=True, exist_ok=True)
+        
         if self.score > self.high_score:
-            with open(self.data_config["HIGH_SCORE_FILE_PATH"], "w", encoding="utf-8") as f:
+            with open(high_score_path, "w", encoding="utf-8") as f:
                 f.write(str(self.score))

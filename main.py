@@ -25,7 +25,7 @@ def main():
         logger.debug(f"Initial state: {info}")
         
         for step in range(1, max_steps_per_episode + 1):
-            action = agent.select_action(obs)
+            action = agent.select_action(obs, episode)
             obs, reward, terminated, truncated, info = env.step(action)
             episode_reward += reward
             steps += 1
