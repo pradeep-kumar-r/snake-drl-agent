@@ -142,6 +142,8 @@ class DQNSnakeAgent(BaseSnakeAgent):
     def select_action(self, state: np.ndarray, episode: int) -> int:
         if episode <= 1:
             self.current_epsilon = self.epsilon_start
+        elif episode > self.train_config["EXPLOITATION_THRESHOLD"]:
+            self.current_epsilon = 0
         else:
             self.current_epsilon = self.current_epsilon * (self.epsilon_decay ** (episode - 1))
             self.current_epsilon = max(self.epsilon_end, self.current_epsilon)
@@ -202,7 +204,8 @@ class DQNSnakeAgent(BaseSnakeAgent):
         action_batch = torch.cat(batch.action).to(self.device)
         reward_batch = torch.cat(batch.reward).to(self.device)
         
-        state_action_values = self.policy_net(state_batch).gather(1, action_batch.unsqueeze(1))
+        with torch.no_grad():
+            state_action_values = self.policy_net(state_batch).gather(1, action_batch.unsqueeze(1))
         
         next_state_values = torch.zeros(self.batch_size, device=self.device)
         if non_final_next_states.size(0) > 0:
